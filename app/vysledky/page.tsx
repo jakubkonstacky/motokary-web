@@ -175,19 +175,31 @@ export default function VysledkyPage() {
                         {races.map(r => {
                           const res = driver.races[r.id];
                           return (
-                            <td key={r.id} style={{ padding: '10px', textAlign: 'center' }}>
-                              {res ? (
-                                <div>
-                                  <div style={{ fontWeight: 'bold', fontSize: '1rem' }}>{res.p1} / {res.p2}</div>
-                                  {/* Speciální zobrazení Pole Position */}
-                                  {res.pole && res.extra > 0 ? (
-                                    <div style={{ color: '#fbbf24', fontSize: '0.7rem', fontWeight: 'bold' }}>+1b. POLE</div>
-                                  ) : res.extra > 0 ? (
-                                    <div style={{ color: '#aaa', fontSize: '0.7rem' }}>+{res.extra}b.</div>
-                                  ) : null}
-                                </div>
-                              ) : <span style={{ color: '#333' }}>X</span>}
-                            </td>
+                                  <td key={r.id} style={{ padding: '10px', textAlign: 'center' }}>
+                                    {res ? (
+                                      <div>
+                                        {/* Pořadí v jízdách (např. 1 / 2) */}
+                                        <div style={{ fontWeight: 'bold', fontSize: '1rem', marginBottom: '2px' }}>
+                                          {res.p1} / {res.p2}
+                                        </div>
+                                        
+                                        {/* Logika zobrazení bodů: x b. (+ 1 b.) vs x b. */}
+                                        <div style={{ fontSize: '0.85rem' }}>
+                                          {res.pole && res.extra > 0 ? (
+                                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                                              {res.pts - res.extra} b. <span style={{ fontSize: '0.75rem' }}>(+ {res.extra} b.)</span>
+                                            </span>
+                                          ) : (
+                                            <span style={{ color: '#ccc' }}>
+                                              {res.pts} b.
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <span style={{ color: '#333' }}>X</span>
+                                    )}
+                                  </td>
                           );
                         })}
                         <td style={{ padding: '20px', fontWeight: 'bold', fontSize: '1.3rem', textAlign: 'center', background: 'rgba(251, 191, 36, 0.03)' }}>

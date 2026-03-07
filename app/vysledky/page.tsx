@@ -1,100 +1,140 @@
-'use client'; // Důležité: umožní interaktivní tlačítka
+'use client';
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializace Supabase (použije proměnné, které už máš ve Vercelu)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function VysledkyPage() {
-  const [year, setYear] = useState(2024); // Výchozí rok
-  const [results, setResults] = useState<any[]>([]);
+export default function KomplexniVysledky() {
+  const [year, setYear] = useState<number | null>(null);
+  const [seasons, setSeasons] = useState<number[]>([]);
+  const [races, setRaces] = useState<any[]>([]);
+  const [driversData, setDriversData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Seznam dostupných ročníků (můžeš doplňovat)
-  const seasons = [2025, 2024, 2023, 2001];
-
+  // 1. Načtení sezón (z tabulky races)
   useEffect(() => {
-    async function fetchResults() {
+    async function fetchSeasons() {
+      const { data } = await supabase.from('races').select('year');
+      if (data) {
+        const uniqueYears = Array.from(new Set(data.map(d => d.year))).sort((a, b) => b! - a!);
+        setSeasons(uniqueYears as number[]);
+        if (uniqueYears.length > 0) setYear(uniqueYears[0] as number);
+      }
+    }
+    fetchSeasons();
+  }, []);
+
+  // 2. Načtení dat pro tabulku
+  useEffect(() => {
+    if (!year) return;
+    async function fetchData() {
       setLoading(true);
-      const { data } = await supabase
+
+      // Načteme závody daného roku
+      const { data: racesData } = await supabase
+        .from('races')
+        .select('*')
+        .eq('year', year)
+        .order('race_date', { ascending: true });
+      setRaces(racesData || []);
+
+      // Načteme všechny výsledky a jezdce
+      const { data: resultsData } = await supabase
         .from('results')
         .select(`
-          position,
-          points,
-          bonus_points,
-          year,
-          drivers (full_name, start_number)
+          position, points, bonus_points, race_id,
+          drivers (id, full_name, start_number)
         `)
-        .eq('year', year) // FILTR: vezme jen výsledky pro vybraný rok
-        .order('position', { ascending: true });
+        .eq('year', year);
 
-      setResults(data || []);
+      // --- TRANSFORMACE DAT DO MATICE ---
+      const driversMap: any = {};
+
+      resultsData?.forEach((res: any) => {
+        const dId = res.drivers.id;
+        if (!driversMap[dId]) {
+          driversMap[dId] = {
+            name: res.drivers.full_name,
+            number: res.drivers.start_number,
+            results: {}, // race_id -> data
+            total: 0
+          };
+        }
+        driversMap[dId].results[res.race_id] = {
+          pos: res.position,
+          pts: Number(res.points || 0) + Number(res.bonus_points || 0)
+        };
+        driversMap[dId].total += Number(res.points || 0) + Number(res.bonus_points || 0);
+      });
+
+      // Seřadíme jezdce podle celkového počtu bodů
+      const sortedDrivers = Object.values(driversMap).sort((a: any, b: any) => b.total - a.total);
+      setDriversData(sortedDrivers);
       setLoading(false);
     }
-    fetchResults();
-  }, [year]); // Spustí se znovu vždy, když změníš 'year'
+    fetchData();
+  }, [year]);
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ color: '#fbbf24', textAlign: 'center' }}>🏆 Výsledky sezóny</h1>
+    <div style={{ padding: '20px', color: '#fff' }}>
+      <h1 style={{ color: '#fbbf24', textAlign: 'center' }}>📊 Detailní výsledky</h1>
 
-      {/* --- PŘEPÍNAČ ROČNÍKŮ --- */}
+      {/* Přepínač let */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '30px' }}>
-        {seasons.map((s) => (
-          <button
-            key={s}
-            onClick={() => setYear(s)}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '5px',
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: year === s ? '#fbbf24' : '#222',
-              color: year === s ? '#000' : '#fff',
-              fontWeight: 'bold',
-              transition: '0.3s'
-            }}
-          >
+        {seasons.map(s => (
+          <button key={s} onClick={() => setYear(s)} style={{ padding: '8px 15px', background: year === s ? '#fbbf24' : '#222', color: year === s ? '#000' : '#fff', border: 'none', cursor: 'pointer', borderRadius: '5px' }}>
             {s}
           </button>
         ))}
       </div>
 
-      {/* --- TABULKA VÝSLEDKŮ --- */}
       {loading ? (
-        <p style={{ textAlign: 'center' }}>Načítám data...</p>
+        <p style={{ textAlign: 'center' }}>Sestavuji tabulku...</p>
       ) : (
-        <div style={{ background: '#111', borderRadius: '10px', overflow: 'hidden', border: '1px solid #333' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div style={{ overflowX: 'auto', background: '#111', borderRadius: '10px', border: '1px solid #333' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
             <thead>
-              <tr style={{ background: '#222', color: '#fbbf24' }}>
-                <th style={{ padding: '15px' }}>Pozice</th>
-                <th style={{ padding: '15px' }}>Jezdec</th>
-                <th style={{ padding: '15px' }}>Číslo</th>
-                <th style={{ padding: '15px' }}>Body celkem</th>
+              <tr style={{ background: '#222', borderBottom: '2px solid #fbbf24' }}>
+                <th style={{ padding: '15px', textAlign: 'left' }}>Jezdec</th>
+                {races.map(race => (
+                  <th key={race.id} style={{ padding: '10px', fontSize: '0.8rem', textAlign: 'center' }}>
+                    <div style={{ color: '#fbbf24' }}>{new Date(race.race_date).toLocaleDateString('cs-CZ', { day: 'd.M.' })}</div>
+                    <div style={{ color: '#666', fontWeight: 'normal' }}>{race.name}</div>
+                  </th>
+                ))}
+                <th style={{ padding: '15px', textAlign: 'center', background: '#fbbf24', color: '#000' }}>CELKEM</th>
               </tr>
             </thead>
             <tbody>
-              {results.length > 0 ? results.map((r, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid #222' }}>
-                  <td style={{ padding: '15px', fontWeight: 'bold' }}>{r.position}.</td>
-                  <td style={{ padding: '15px' }}>{r.drivers?.full_name}</td>
-                  <td style={{ padding: '15px', color: '#888' }}>#{r.drivers?.start_number}</td>
-                  <td style={{ padding: '15px', fontWeight: 'bold' }}>
-                    {Number(r.points || 0) + Number(r.bonus_points || 0)} b.
+              {driversData.map((driver, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '15px' }}>
+                    <strong>{driver.name}</strong> <span style={{ color: '#666' }}>#{driver.number}</span>
+                  </td>
+                  {races.map(race => {
+                    const res = driver.results[race.id];
+                    return (
+                      <td key={race.id} style={{ textAlign: 'center', padding: '10px' }}>
+                        {res ? (
+                          <div>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{res.pos}.</span>
+                            <div style={{ fontSize: '0.7rem', color: '#fbbf24' }}>{res.pts} b.</div>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#444' }}>X</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                  <td style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem', background: '#1a1a1a' }}>
+                    {driver.total}
                   </td>
                 </tr>
-              )) : (
-                <tr>
-                  <td colSpan={4} style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                    Pro rok {year} zatím nejsou žádné výsledky.
-                  </td>
-                </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>

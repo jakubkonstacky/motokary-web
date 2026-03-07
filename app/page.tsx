@@ -21,7 +21,8 @@ export default async function HomePage() {
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
-    .eq('season_id', currentYear);
+    .eq('season_id', currentYear)
+    .order('order_by', { ascending: true }); // TADY JE ZMĚNA
 
   // 4. Načtení výsledků pro výpočet TOP 3 (přes JOIN na races kvůli sezóně)
   const { data: allResults } = await supabase

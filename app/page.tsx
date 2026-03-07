@@ -7,7 +7,7 @@ const supabase = createClient(
 )
 
 export default async function HomePage() {
-  // Načteme TOP 3 jezdce pro aktuální rok (2024)
+  // Načteme TOP 5 jezdce pro aktuální rok (2024)
   const { data: topResults } = await supabase
     .from('results')
     .select(`
@@ -15,9 +15,9 @@ export default async function HomePage() {
       drivers (full_name, start_number),
       categories (name)
     `)
-    .eq('year', 2024)
+    .eq('year', 2025)
     .order('points', { ascending: false })
-    .limit(3);
+    .limit(5);
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', color: '#fff' }}>

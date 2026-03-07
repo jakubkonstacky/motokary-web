@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Toto vypne kontrolu chyb při buildu, aby nás to teď nezdržovalo
   typescript: {
+    // Toto zajistí, že drobné chyby v kódu nezablokují spuštění webu
     ignoreBuildErrors: true,
   },
 }

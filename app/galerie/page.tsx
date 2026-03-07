@@ -10,12 +10,38 @@ const supabase = createClient(
 
 export default function GaleriePage() {
   const [photos, setPhotos] = useState<any[]>([]);
-  const [year, setYear] = useState(2025);
+  const [year, setYear] = useState<number | null>(null);
+  const [seasons, setSeasons] = useState<number[]>([]); // Dynamický seznam let z DB
   const [loading, setLoading] = useState(true);
 
-  const seasons = [2025, 2024, 2023];
-
+  // 1. NAČTENÍ DOSTUPNÝCH SEZÓN (ROKŮ) Z TABULKY PHOTOS
   useEffect(() => {
+    async function fetchPhotoSeasons() {
+      const { data } = await supabase
+        .from('photos')
+        .select('year');
+
+      if (data) {
+        // Vytvoříme seznam unikátních roků z fotek a seřadíme je
+        const uniqueYears = Array.from(new Set(data.map(item => item.year)))
+          .filter((y): y is number => y !== null)
+          .sort((a, b) => b - a);
+
+        setSeasons(uniqueYears);
+        
+        // Nastavíme výchozí rok na nejnovější nalezený
+        if (uniqueYears.length > 0 && !year) {
+          setYear(uniqueYears[0]);
+        }
+      }
+    }
+    fetchPhotoSeasons();
+  }, []);
+
+  // 2. NAČTENÍ FOTEK PRO VYBRANÝ ROK
+  useEffect(() => {
+    if (!year) return;
+
     async function fetchPhotos() {
       setLoading(true);
       const { data } = await supabase
@@ -32,9 +58,10 @@ export default function GaleriePage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            
-      {/* --- FILTR ROČNÍKŮ --- */}
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px' }}>
+      <h1 style={{ color: '#fbbf24', textAlign: 'center', fontSize: '2.5rem' }}>📸 Fotogalerie</h1>
+      
+      {/* --- DYNAMICKÝ FILTR ROČNÍKŮ --- */}
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px', flexWrap: 'wrap' }}>
         {seasons.map((s) => (
           <button
             key={s}
@@ -61,7 +88,7 @@ export default function GaleriePage() {
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'record(auto-fill, minmax(300px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
           gap: '20px' 
         }}>
           {photos.length > 0 ? photos.map((photo) => (
@@ -69,8 +96,7 @@ export default function GaleriePage() {
               background: '#111', 
               borderRadius: '10px', 
               overflow: 'hidden', 
-              border: '1px solid #222',
-              transition: 'transform 0.2s'
+              border: '1px solid #222'
             }}>
               <img 
                 src={photo.url} 
@@ -86,7 +112,7 @@ export default function GaleriePage() {
             </div>
           )) : (
             <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666', padding: '50px' }}>
-              Pro rok {year} zatím nemáme v galerii žádné fotky.
+              Pro tento rok zatím nemáme v galerii žádné fotky.
             </p>
           )}
         </div>

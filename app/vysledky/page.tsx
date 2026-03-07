@@ -39,7 +39,8 @@ export default function VysledkyPage() {
       const { data: catData } = await supabase
         .from('categories')
         .select('*')
-        .eq('season_id', selectedYear);
+        .eq('season_id', selectedYear)
+        .order('order_by', { ascending: true }); // TADY JE ZMĚNA
       setCategories(catData || []);
 
       // Načtení závodů pro daný rok

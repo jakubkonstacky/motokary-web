@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-client'
 
 // SEM VLOŽ SVOJE ÚDAJE ZE SUPABASE (Settings -> API)
 const SUPABASE_URL = 'https://yjpevqwklfehterabrwo.supabase.co'
-const SUPABASE_ANON_KEY = 'TVŮJ_ANON_PUBLIC_KEY_TADY'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqcGV2cXdrbGZlaHRlcmFicndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MDI2MTgsImV4cCI6MjA4ODQ3ODYxOH0.NhqsP1tlia2qj_vEKrLDfpx-wZ72NeHw8uNAAM26kig'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 

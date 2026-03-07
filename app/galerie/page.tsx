@@ -10,10 +10,10 @@ const supabase = createClient(
 
 export default function GaleriePage() {
   const [photos, setPhotos] = useState<any[]>([]);
-  const [year, setYear] = useState(2024);
+  const [year, setYear] = useState(2025);
   const [loading, setLoading] = useState(true);
 
-  const seasons = [2025, 2024, 2023, 2001];
+  const seasons = [2025, 2024, 2023];
 
   useEffect(() => {
     async function fetchPhotos() {
@@ -32,8 +32,7 @@ export default function GaleriePage() {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ color: '#fbbf24', textAlign: 'center', fontSize: '2.5rem' }}>📸 Fotogalerie</h1>
-      
+            
       {/* --- FILTR ROČNÍKŮ --- */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px' }}>
         {seasons.map((s) => (

@@ -122,9 +122,11 @@ const mainTitleStyle: any = {
   marginTop: '0' // Odstranění horního okraje pro maximální posun nahoru
 };
 
+
+
 const categoryTitleStyle: any = { fontSize: '1.8rem', fontWeight: '800', color: '#fbbf24', marginBottom: '25px', textTransform: 'none' };
-const seasonNavStyle: any = { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '50px' };
-const seasonLinkBase: any = { padding: '10px 25px', borderRadius: '30px', textDecoration: 'none', fontWeight: '700', border: '1px solid rgba(255,255,255,0.1)' };
+const seasonNavStyle: any = { display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '40px' };
+const seasonLinkBase: any = { padding: '10px 25px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', border: 'none' };
 const tableContainerStyle: any = { background: 'rgba(12, 12, 12, 0.8)', backdropFilter: 'blur(15px)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', overflowX: 'auto' };
 const thStyle: any = { padding: '20px', fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase', color: '#666' };
 const tdStyle: any = { padding: '20px', fontSize: '1rem' };

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializace Supabase klienta
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -12,90 +11,117 @@ const supabase = createClient(
 export default function GaleriePage() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Stav pro Slideshow (Lightbox)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchPhotos() {
       setLoading(true);
-      // Předpokládáme tabulku "gallery" s poli: url, title, category
       const { data, error } = await supabase
         .from('gallery')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Chyba při načítání galerie:", error);
-      } else {
-        setPhotos(data || []);
-      }
+      if (!error) setPhotos(data || []);
       setLoading(false);
     }
-
     fetchPhotos();
   }, []);
+
+  // Funkce pro přepínání ve slideshow
+  const nextPhoto = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIndex !== null) {
+      setSelectedIndex((selectedIndex + 1) % photos.length);
+    }
+  };
+
+  const prevPhoto = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedIndex !== null) {
+      setSelectedIndex((selectedIndex - 1 + photos.length) % photos.length);
+    }
+  };
 
   return (
     <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
       <header style={{ textAlign: 'center', marginBottom: '50px' }}>
         <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie Týmu</h1>
-        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>Záběry z trati i depa</p>
+        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>Klikni na fotku pro slide show</p>
       </header>
 
       {loading ? (
-        <div style={{ textAlign: 'center', color: '#444', marginTop: '50px' }}>Načítám fotografie...</div>
+        <div style={{ textAlign: 'center', color: '#444' }}>Načítám...</div>
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-          gap: '25px' 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+          gap: '20px' 
         }}>
-          {photos.length > 0 ? photos.map((photo) => (
-            <div key={photo.id} style={{ 
-              background: '#111', 
-              borderRadius: '15px', 
-              overflow: 'hidden', 
-              border: '1px solid #222',
-              transition: 'transform 0.2s',
-              cursor: 'pointer'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          {photos.map((photo, index) => (
+            <div 
+              key={photo.id} 
+              onClick={() => setSelectedIndex(index)}
+              style={{ 
+                background: '#111', borderRadius: '10px', overflow: 'hidden', 
+                border: '1px solid #222', cursor: 'zoom-in'
+              }}
             >
-              {/* KONTEJNER PRO OBRÁZEK: Fixní poměr 3:2 bez ořezu */}
-              <div style={{ 
-                width: '100%', 
-                aspectRatio: '3 / 2', 
-                background: '#050505', // Černé pozadí pro případné okraje
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderBottom: '1px solid #222'
-              }}>
+              <div style={{ width: '100%', aspectRatio: '3 / 2', background: '#000' }}>
                 <img 
                   src={photo.url} 
                   alt={photo.title}
-                  style={{ 
-                    maxWidth: '100%', 
-                    maxHeight: '100%', 
-                    objectFit: 'contain' // Zobrazí fotku CELOU
-                  }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} 
                 />
               </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-              {/* POPISKA POD FOTKOU */}
-              <div style={{ padding: '20px' }}>
-                <div style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px' }}>
-                  {photo.category || 'Závody'}
-                </div>
-                <div style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '500' }}>
-                  {photo.title}
-                </div>
-              </div>
+      {/* --- SLIDE SHOW MODAL --- */}
+      {selectedIndex !== null && (
+        <div 
+          onClick={() => setSelectedIndex(null)}
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', zIndex: 1000, padding: '20px'
+          }}
+        >
+          {/* Zavírací křížek */}
+          <button style={{ position: 'absolute', top: '20px', right: '30px', background: 'none', border: 'none', color: '#fff', fontSize: '2rem', cursor: 'pointer' }}>✕</button>
+
+          {/* Šipka vlevo */}
+          <button 
+            onClick={prevPhoto}
+            style={{ position: 'absolute', left: '20px', background: '#222', border: 'none', color: '#fff', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem' }}
+          >
+            ❮
+          </button>
+
+          {/* Aktuální fotka v plné kráse */}
+          <div style={{ textAlign: 'center', maxWidth: '90%', maxHeight: '80%' }}>
+            <img 
+              src={photos[selectedIndex].url} 
+              alt="Slide"
+              style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 0 30px rgba(0,0,0,0.5)' }} 
+            />
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ color: '#fbbf24', fontSize: '0.9rem', fontWeight: 'bold' }}>{photos[selectedIndex].category}</div>
+              <h3 style={{ margin: '5px 0' }}>{photos[selectedIndex].title}</h3>
+              <div style={{ color: '#666' }}>{selectedIndex + 1} / {photos.length}</div>
             </div>
-          )) : (
-            <div style={{ colSpan: '100%', textAlign: 'center', color: '#444', padding: '100px 0' }}>
-              V galerii zatím nejsou žádné fotky.
-            </div>
-          )}
+          </div>
+
+          {/* Šipka vpravo */}
+          <button 
+            onClick={nextPhoto}
+            style={{ position: 'absolute', right: '20px', background: '#222', border: 'none', color: '#fff', padding: '15px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.2rem' }}
+          >
+            ❯
+          </button>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-// Vynutí načtení čerstvých dat při každé návštěvě (řeší problém s neaktualizací názvů závodů)
+// Vynutí načtení čerstvých dat při každé návštěvě (řeší problém s neaktualizací názvů závodů) 
 export const revalidate = 0;
 
 const supabase = createClient(

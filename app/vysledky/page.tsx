@@ -50,7 +50,8 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
         
         const driverStats: any = {};
         catResults.forEach(r => {
-          const name = r.drivers.full_name;
+          const name = r.drivers?.full_name;
+          if (!name) return;
           if (!driverStats[name]) {
             driverStats[name] = {
               name,
@@ -63,11 +64,12 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
           const pointsExtra = (r.extra_point || 0);
           
           driverStats[name].raceData[r.race_id] = {
-            points: pointsBase + pointsExtra,
-            hasExtra: pointsExtra > 0, // INFO O EXTRA BODU
+            displayPoints: pointsBase, // TADY JE ZMĚNA: Pouze základní body
+            hasExtra: pointsExtra > 0,
             p1: r.pos_race_1,
             p2: r.pos_race_2
           };
+          // CELKEM se ale stále počítá se vším všudy
           driverStats[name].total += (pointsBase + pointsExtra);
         });
 
@@ -106,15 +108,14 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
                             {raceInfo ? (
                               <div style={{ position: 'relative', display: 'inline-block' }}>
                                 <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>
-                                  {raceInfo.points}
-                                  {/* ZOBRAZENÍ EXTRA BODU */}
+                                  {raceInfo.displayPoints}
                                   {raceInfo.hasExtra && (
-                                    <span style={{ color: '#fbbf24', fontSize: '0.7rem', verticalAlign: 'top', marginLeft: '2px' }}>+1</span>
+                                    <span style={{ color: '#fbbf24', fontSize: '0.75rem', verticalAlign: 'top', marginLeft: '1px', fontWeight: '900' }}>+1</span>
                                   )}
                                 </div>
                                 {r.show_race_position && (
                                   <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '4px' }}>
-                                    {raceInfo.p1}. / {raceInfo.p2}. 
+                                    {raceInfo.p1}. / {raceInfo.p2}. jízda
                                   </div>
                                 )}
                               </div>

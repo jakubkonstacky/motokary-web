@@ -7,8 +7,8 @@ export default function ONasPage() {
       
       <section style={{ marginTop: '30px' }}>
         <h2 style={{ color: '#fbbf24' }}>Naše historie</h2>
-        <p>
-          Všechno to začalo v roce 2001, kdy jsme poprvé usedli do motokár. 
+        <p>UPRAVIT ....          
+          Všechno to začalo v roce 20xx, kdy jsme poprvé usedli do motokár. 
           Od té doby jsme prošli desítkami závodů a nasbírali stovky zkušeností. 
           Naším cílem je neustálé zlepšování a radost z rychlé jízdy.
         </p>
@@ -17,6 +17,7 @@ export default function ONasPage() {
       <section style={{ marginTop: '30px', padding: '20px', background: '#111', borderRadius: '10px' }}>
         <h2 style={{ color: '#fbbf24', marginTop: 0 }}>Naše vize</h2>
         <p>
+          UPRAVIT ....
           Chceme vybudovat komunitu nadšenců do motokár, kde výsledky nejsou jen o číslech, 
           ale o přátelství a fair play na trati i mimo ni.
         </p>

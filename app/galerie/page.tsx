@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { THEME } from '@/lib/theme'; // Import tvého centrálního skladu stylů
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,13 +16,12 @@ export default function GaleriePage() {
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // 1. Načtení sezón (pro ty žluté knoflíky nahoře)
+  // 1. Načtení sezón
   useEffect(() => {
     async function fetchSeasons() {
       const { data } = await supabase.from('seasons').select('*').order('id', { ascending: false });
       if (data && data.length > 0) {
         setSeasons(data);
-        // Automaticky vybere nejnovější rok z DB
         const currentYear = new Date().getFullYear();
         setSelectedYear(data.some(s => s.id === currentYear) ? currentYear : data[0].id);
       }
@@ -29,24 +29,19 @@ export default function GaleriePage() {
     fetchSeasons();
   }, []);
 
-  // 2. Načtení fotek z tabulky PHOTOS podle sloupce YEAR
+  // 2. Načtení fotek
   useEffect(() => {
     if (!selectedYear) return;
 
     async function fetchPhotos() {
       setLoading(true);
-      console.log("Hledám fotky pro rok:", selectedYear);
-
       const { data, error } = await supabase
-        .from('photos') // OPRAVENO NA "photos"
+        .from('photos')
         .select('*')
-        .eq('year', selectedYear) // OPRAVENO NA "year"
+        .eq('year', selectedYear)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Chyba Supabase:", error.message);
-      } else {
-        console.log("Načtená data:", data);
+      if (!error) {
         setPhotos(data || []);
       }
       setLoading(false);
@@ -58,26 +53,22 @@ export default function GaleriePage() {
   const prev = (e?: any) => { e?.stopPropagation(); setSelectedIndex((selectedIndex! - 1 + photos.length) % photos.length); };
 
   return (
-    <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
+    <div style={THEME.container}>
       
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie</h1> - <h2>Sezóna {selectedYear}</h2>
-        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>
-          Sezóna {selectedYear}
-        </p>
-      </header>
+      {/* Hlavní nadpis - Sentence case a posunutý nahoru */}
+      <h1 style={THEME.mainTitle}>Fotogalerie</h1>
 
-      {/* TLAČÍTKA ROKŮ */}
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px' }}>
+      {/* TLAČÍTKA ROKŮ - Sjednocená s výsledky (8px rohy, bez rámečku) */}
+      <div style={THEME.seasonNav}>
         {seasons.map(s => (
           <button 
             key={s.id} 
             onClick={() => setSelectedYear(s.id)}
             style={{
-              padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
-              background: selectedYear === s.id ? '#fbbf24' : '#111',
+              ...THEME.seasonLinkBase,
+              cursor: 'pointer',
+              background: selectedYear === s.id ? '#fbbf24' : 'rgba(255,255,255,0.08)',
               color: selectedYear === s.id ? '#000' : '#fff',
-              transition: '0.2s'
             }}
           >
             {s.id}
@@ -88,35 +79,32 @@ export default function GaleriePage() {
       {loading ? (
         <p style={{ textAlign: 'center', color: '#444' }}>Načítám...</p>
       ) : (
-        <div style={{ 
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' 
-        }}>
+        <div style={galleryGridStyle}>
           {photos.length > 0 ? photos.map((photo, index) => (
             <div 
               key={photo.id} 
               onClick={() => setSelectedIndex(index)}
-              style={{ background: '#111', borderRadius: '12px', overflow: 'hidden', border: '1px solid #222', cursor: 'pointer' }}
+              style={{ ...THEME.tableContainer, cursor: 'pointer', border: 'none' }}
             >
-              <div style={{ width: '100%', aspectRatio: '3 / 2', background: '#000' }}>
+              <div style={{ width: '100%', aspectRatio: '3 / 2', background: '#000', borderRadius: '24px 24px 0 0', overflow: 'hidden' }}>
                 <img 
                   src={photo.url} 
                   alt={photo.caption} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
               </div>
-              <div style={{ padding: '15px' }}>
-                <div style={{ color: '#fbbf24', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                    {photo.race_name} {/* Sloupec z tvé DB */}
+              <div style={{ padding: '20px' }}>
+                <div style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {photo.race_name}
                 </div>
-                <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
-                    {photo.caption} {/* Sloupec z tvé DB */}
+                <div style={{ fontSize: '1rem', marginTop: '8px', fontWeight: '600', color: '#fff' }}>
+                    {photo.caption}
                 </div>
               </div>
             </div>
           )) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px 0', color: '#444' }}>
-              <p>V sezóně {selectedYear} nebyly v tabulce "photos" nalezeny žádné záznamy.</p>
-              <p style={{ fontSize: '0.8rem' }}>Zkontroluj, zda mají fotky v Supabase ve sloupci "year" skutečně hodnotu {selectedYear}.</p>
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px 0', color: '#666' }}>
+              <p>V sezóně {selectedYear} nebyly nalezeny žádné záznamy.</p>
             </div>
           )}
         </div>
@@ -132,8 +120,8 @@ export default function GaleriePage() {
           <button onClick={prev} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '20px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem' }}>❮</button>
           
           <div style={{ maxWidth: '90%', maxHeight: '80%', textAlign: 'center' }}>
-            <img src={photos[selectedIndex].url} style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '8px', objectFit: 'contain' }} onClick={(e) => e.stopPropagation()} />
-            <h3 style={{ color: '#fbbf24', marginTop: '20px' }}>{photos[selectedIndex].caption}</h3>
+            <img src={photos[selectedIndex].url} style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '12px', objectFit: 'contain' }} onClick={(e) => e.stopPropagation()} />
+            <h3 style={{ color: '#fbbf24', marginTop: '20px', fontSize: '1.5rem', fontWeight: '800' }}>{photos[selectedIndex].caption}</h3>
           </div>
 
           <button onClick={next} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '20px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem' }}>❯</button>
@@ -142,3 +130,9 @@ export default function GaleriePage() {
     </div>
   );
 }
+
+const galleryGridStyle: any = { 
+  display: 'grid', 
+  gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+  gap: '25px' 
+};

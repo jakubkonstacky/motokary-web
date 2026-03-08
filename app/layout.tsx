@@ -1,10 +1,7 @@
 import './globals.css';
 import Link from 'next/link';
 
-export const metadata = { 
-  title: 'ENZO CUP | Šampionát', 
-  description: 'Výsledky a kalendář šampionátu ENZO CUP' 
-};
+export const metadata = { title: 'ENZO CUP | Oficiální šampionát' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,24 +13,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '20px 0'
         }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
-            {/* BRAND: ENZO CUP */}
-            <Link href="/" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#fbbf24', textDecoration: 'none', letterSpacing: '-1px' }}>
+            <Link href="/" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#fbbf24', textDecoration: 'none' }}>
               ENZO<span style={{ color: '#fff' }}>CUP</span>
             </Link>
-
-            {/* HLAVNÍ MENU */}
             <div style={{ display: 'flex', gap: '25px' }}>
-              {[
-                { name: 'Domů', href: '/' },
-                { name: 'Výsledky', href: '/vysledky' },
-                { name: 'Galerie', href: '/galerie' },
-                { name: 'O nás', href: '/o-nas' },
-                { name: 'Kontakt', href: '/kontakt' }
-              ].map((item) => (
-                <Link key={item.name} href={item.href} style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>
-                  {item.name}
-                </Link>
-              ))}
+              <Link href="/" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>Domů</Link>
+              <Link href="/vysledky" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>Výsledky</Link>
+              <Link href="/galerie" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>Galerie</Link>
+              <Link href="/o-nas" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>O nás</Link>
+              <Link href="/kontakt" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' }}>Kontakt</Link>
             </div>
           </div>
         </nav>

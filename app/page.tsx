@@ -1,142 +1,93 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 
-// Inicializace Supabase klienta (Server-side)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 export default async function HomePage() {
   const currentYear = new Date().getFullYear();
 
-  // 1. Načtení závodů pro aktuální rok
-  const { data: races } = await supabase
-    .from('races')
-    .select('*')
-    .eq('season_id', currentYear)
-    .order('id', { ascending: true });
-
-  // 2. Načtení kategorií pro aktuální rok (abychom věděli, co ukázat v náhledu)
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('season_id', currentYear)
-    .order('order_by', { ascending: true })
-    .limit(1);
-
-  const mainCategory = categories?.[0];
-
-  // 3. Načtení výsledků (Top 3) pro první kategorii
+  // Načtení dat (stejné jako předtím)
+  const { data: races } = await supabase.from('races').select('*').eq('season_id', currentYear).order('id', { ascending: true });
+  const { data: categories } = await supabase.from('categories').select('*').eq('season_id', currentYear).order('order_by', { ascending: true }).limit(1);
+  
   let topDrivers: any[] = [];
-  if (mainCategory) {
-    const { data: results } = await supabase
-      .from('results')
-      .select('total_points, drivers(full_name, start_number)')
-      .eq('category_id', mainCategory.id);
-
-    // Agregace bodů pro náhled TOP 3
+  if (categories?.[0]) {
+    const { data: res } = await supabase.from('results').select('total_points, drivers(full_name, start_number)').eq('category_id', categories[0].id);
     const grouped: any = {};
-    results?.forEach((r: any) => {
+    res?.forEach((r: any) => {
       const name = r.drivers.full_name;
-      if (!grouped[name]) {
-        grouped[name] = { name, points: 0, number: r.drivers.start_number };
-      }
+      if (!grouped[name]) grouped[name] = { name, points: 0, number: r.drivers.start_number };
       grouped[name].points += r.total_points;
     });
-
-    topDrivers = Object.values(grouped)
-      .sort((a: any, b: any) => b.points - a.points)
-      .slice(0, 3);
+    topDrivers = Object.values(grouped).sort((a: any, b: any) => b.points - a.points).slice(0, 3);
   }
 
   return (
-    <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
-      
-      {/* HLAVNÍ HEADER STRÁNKY */}
-      <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-        <h1 style={{ fontSize: '3rem', color: '#fbbf24', marginBottom: '10px' }}>Motokáry Konstacký</h1>
-        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '3px' }}>Oficiální výsledky sezóny {currentYear}</p>
-      </div>
+    <div>
+      {/* 1. HERO SECTION (Tady to začíná vypadat jako Motopark) */}
+      <section style={{ 
+        height: '70vh', 
+        backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.3), #050505), url("https://images.unsplash.com/photo-1547447134-cd3f5c716030?q=80&w=2000")', // Později nahradíme vaší fotkou
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '0 20px'
+      }}>
+        <h1 style={{ fontSize: '5rem', fontWeight: '900', margin: 0, letterSpacing: '-3px', lineHeight: '0.9' }}>
+          RYCHLOST.<br/><span style={{ color: '#fbbf24' }}>ADRENALIN.</span>
+        </h1>
+        <p style={{ marginTop: '20px', fontSize: '1.2rem', color: '#ccc', maxWidth: '600px', fontWeight: '300' }}>
+          Sledujte cestu týmu Konstacký Racing v šampionátu motokár {currentYear}.
+        </p>
+      </section>
 
-      {/* GRID LAYOUT: KALENDÁŘ | POŘADÍ */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '50px', alignItems: 'start' }}>
-        
-        {/* LEVÝ SLOUPY: KALENDÁŘ */}
-        <section>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.6rem', marginBottom: '25px', fontWeight: 'bold' }}>
-            <span>📅</span> Kalendář závodů
-          </h2>
+      {/* 2. DATÁ SEKCÍ (Karty s daty) */}
+      <div style={{ maxWidth: '1200px', margin: '-100px auto 100px', padding: '0 20px', position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '30px' }}>
           
-          <div style={{ background: '#111', borderRadius: '15px', border: '1px solid #222', overflow: 'hidden' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid #222', color: '#444', fontSize: '0.75rem', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '15px 20px', textAlign: 'left', fontWeight: 'normal' }}>Datum</th>
-                  <th style={{ padding: '15px 20px', textAlign: 'left', fontWeight: 'normal' }}>Závod</th>
-                  <th style={{ padding: '15px 20px', textAlign: 'right', fontWeight: 'normal' }}>ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {races && races.length > 0 ? races.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid #1a1a1a' }}>
-                    <td style={{ padding: '18px 20px', color: '#fbbf24', fontWeight: 'bold' }}>
-                      {new Date(r.race_date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}.
-                    </td>
-                    <td style={{ padding: '18px 20px', fontWeight: '500' }}>{r.name}</td>
-                    <td style={{ padding: '18px 20px', textAlign: 'right', color: '#333', fontSize: '0.8rem' }}>{r.id}</td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan={3} style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Sezóna se připravuje...</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* PRAVÝ SLOUPY: PRŮBĚŽNÉ POŘADÍ */}
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '25px' }}>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.6rem', margin: 0, fontWeight: 'bold' }}>
-              <span>🏆</span> Průběžné pořadí
-            </h2>
-            <Link href="/vysledky" style={{ color: '#fbbf24', fontSize: '0.9rem', textDecoration: 'none', borderBottom: '1px solid transparent', transition: '0.2s' }}>
-              Všechny tabulky →
-            </Link>
-          </div>
-
-          <div style={{ background: '#111', borderRadius: '15px', border: '1px solid #222', overflow: 'hidden' }}>
-            <div style={{ padding: '15px 20px', background: '#1a1a1a', borderBottom: '1px solid #222', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '0.9rem' }}>{mainCategory?.name || 'Šampionát'}</span>
-              <span style={{ color: '#444', fontSize: '0.75rem' }}>{mainCategory?.id}</span>
-            </div>
-
-            <div style={{ padding: '10px 0' }}>
-              {topDrivers.length > 0 ? topDrivers.map((d, idx) => (
-                <div key={idx} style={{ 
-                  display: 'flex', alignItems: 'center', padding: '15px 20px', 
-                  borderBottom: idx === topDrivers.length - 1 ? 'none' : '1px solid #1a1a1a' 
-                }}>
-                  <span style={{ 
-                    width: '30px', fontWeight: 'bold', fontSize: '1.2rem',
-                    color: idx === 0 ? '#fbbf24' : idx === 1 ? '#94a3b8' : '#92400e' 
-                  }}>
-                    {idx + 1}.
-                  </span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 'bold' }}>{d.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#444' }}>#{d.number}</div>
-                  </div>
-                  <div style={{ fontWeight: 'bold', color: '#fbbf24', fontSize: '1.1rem' }}>{d.points} <span style={{ fontSize: '0.7rem', color: '#444' }}>b.</span></div>
+          {/* BOX: KALENDÁŘ */}
+          <div style={glassCardStyle}>
+            <h2 style={cardTitleStyle}><span>📅</span> Kalendář závodů</h2>
+            <div style={{ marginTop: '20px' }}>
+              {races?.map(r => (
+                <div key={r.id} style={raceRowStyle}>
+                  <div style={{ color: '#fbbf24', fontWeight: '800', width: '60px' }}>{new Date(r.race_date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}</div>
+                  <div style={{ flex: 1, fontWeight: '600' }}>{r.name}</div>
+                  <div style={{ color: '#333', fontSize: '0.8rem' }}>#{r.id}</div>
                 </div>
-              )) : (
-                <div style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Zatím neodjet žádný závod.</div>
-              )}
+              ))}
             </div>
           </div>
-        </section>
 
+          {/* BOX: POŘADÍ */}
+          <div style={glassCardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={cardTitleStyle}><span>🏆</span> Průběžné pořadí</h2>
+              <Link href="/vysledky" style={{ color: '#fbbf24', fontSize: '0.8rem', textDecoration: 'none', fontWeight: 'bold' }}>DETAIL →</Link>
+            </div>
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ background: '#1a1a1a', padding: '8px 15px', borderRadius: '5px', fontSize: '0.8rem', color: '#fbbf24', marginBottom: '15px', display: 'inline-block' }}>
+                {categories?.[0]?.name}
+              </div>
+              {topDrivers.map((d, idx) => (
+                <div key={idx} style={driverRowStyle}>
+                  <span style={{ width: '30px', fontWeight: '900', color: idx === 0 ? '#fbbf24' : '#555' }}>{idx + 1}.</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700' }}>{d.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#444' }}>#{d.number}</div>
+                  </div>
+                  <div style={{ fontWeight: '900', fontSize: '1.2rem' }}>{d.points} <span style={{ fontSize: '0.7rem', color: '#444' }}>b.</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
 }
+
+// STYLOVÉ KOMPONENTY (PRO ČISTÝ KÓD)
+const glassCardStyle: any = { background: 'rgba(20, 20, 20, 0.8)', backdropFilter: 'blur(15px)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', padding: '35px', boxShadow: '0 20px 40px rgba(0,0,0,0.4)' };
+const cardTitleStyle: any = { fontSize: '1.4rem', margin: 0, fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' };
+const raceRowStyle: any = { display: 'flex', padding: '15px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' };
+const driverRowStyle: any = { display: 'flex', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' };

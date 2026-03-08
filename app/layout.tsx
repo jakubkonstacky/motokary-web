@@ -1,30 +1,46 @@
-import Link from 'next/link'
+import './globals.css';
+import Link from 'next/link';
+
+export const metadata = { title: 'Motokáry Konstacký', description: 'Oficiální výsledky týmu' };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="cs">
-      <body style={{ margin: 0, background: '#000', color: '#fff', fontFamily: 'sans-serif' }}>
-        {/* --- NAVIGACE --- */}
+      <body style={{ margin: 0, backgroundColor: '#050505', color: '#fff', fontFamily: '"Inter", sans-serif' }}>
+        {/* SLEEK NAVIGATION BAR */}
         <nav style={{ 
-          padding: '20px', 
-          borderBottom: '1px solid #333', 
-          display: 'flex', 
-          gap: '20px',
-          background: '#0a0a0a',
-          position: 'sticky',
-          top: 0
+          position: 'sticky', top: 0, zIndex: 100,
+          background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          padding: '15px 0'
         }}>
-          <Link href="/" style={{ color: '#fbbf24', fontWeight: 'bold', textDecoration: 'none' }}>🏠 Domů</Link>
-          <Link href="/vysledky" style={{ color: '#fff', textDecoration: 'none' }}>🏁 Výsledky</Link>
-          <Link href="/galerie" style={{ color: '#fff', textDecoration: 'none' }}>📸 Galerie</Link>
-          <Link href="/o-nas" style={{ color: '#fff', textDecoration: 'none' }}>👥 O nás</Link>
-          <Link href="/kontakt" style={{ color: '#fff', textDecoration: 'none' }}>📞 Kontakt</Link>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
+            <Link href="/" style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fbbf24', textDecoration: 'none', letterSpacing: '-1px' }}>
+              KONSTACKÝ<span style={{ color: '#fff' }}>RACING</span>
+            </Link>
+            <div style={{ display: 'flex', gap: '30px' }}>
+              {[
+                { name: 'Domů', href: '/' },
+                { name: 'Výsledky', href: '/vysledky' },
+                { name: 'Galerie', href: '/galerie' },
+                { name: 'O nás', href: '/o-nas' },
+                { name: 'Kontakt', href: '/kontakt' }
+              ].map((item) => (
+                <Link key={item.name} href={item.href} style={{ 
+                  color: '#aaa', textDecoration: 'none', fontSize: '0.9rem', 
+                  fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px',
+                  transition: '0.3s'
+                }} 
+                onMouseEnter={(e) => e.currentTarget.style.color = '#fbbf24'}
+                onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
         </nav>
-
-        <main style={{ padding: '20px' }}>
-          {children}
-        </main>
+        <main>{children}</main>
       </body>
     </html>
-  )
+  );
 }

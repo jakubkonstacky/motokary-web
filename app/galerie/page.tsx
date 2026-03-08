@@ -61,7 +61,7 @@ export default function GaleriePage() {
     <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
       
       <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie</h1>
+        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie</h1> - <h2>Sezóna {selectedYear}</h2>
         <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>
           Sezóna {selectedYear}
         </p>

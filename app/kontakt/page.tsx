@@ -14,7 +14,7 @@ export default function KontaktPage() {
       }}>
         <div style={{ background: '#111', padding: '30px', borderRadius: '10px', border: '1px solid #333' }}>
           <h3 style={{ color: '#fbbf24' }}>Email</h3>
-          <p>info@motokary-web.cz</p>
+          <p>info@aaa-bbb-ccc.cz</p>
         </div>
         
         <div style={{ background: '#111', padding: '30px', borderRadius: '10px', border: '1px solid #333' }}>

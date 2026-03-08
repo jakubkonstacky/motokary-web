@@ -8,16 +8,12 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// searchParams umožňuje číst rok z adresy prohlížeče
 export default async function VysledkyPage({ searchParams }: { searchParams: { year?: string } }) {
-  // 1. Zjistíme dostupné sezóny pro výběr
   const { data: allSeasons } = await supabase.from('races').select('season_id');
   const years = Array.from(new Set(allSeasons?.map(s => s.season_id))).sort((a, b) => b - a);
   
-  // 2. Nastavíme vybraný rok (z adresy nebo nejnovější dostupný)
   const selectedYear = searchParams.year ? parseInt(searchParams.year) : (years[0] || new Date().getFullYear());
 
-  // 3. Načtení dat pro vybraný rok
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', selectedYear).order('order_by', { ascending: true });
   const { data: races } = await supabase.from('races').select('*').eq('season_id', selectedYear).order('id', { ascending: true });
   const { data: resultsData } = await supabase.from('results').select('*, drivers(full_name)');
@@ -25,12 +21,10 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
   return (
     <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px', minHeight: '100vh' }}>
       
-      {/* NADPIS ZMĚNĚN ZPĚT */}
       <h1 style={{ fontSize: '2.5rem', fontWeight: '900', textTransform: 'uppercase', marginBottom: '20px', textAlign: 'center' }}>
         Výsledky Šampionátu
       </h1>
 
-      {/* VÝBĚR SEZÓNY - VRÁCENO DO KÓDU */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '40px' }}>
         {years.map(year => (
           <Link 
@@ -65,13 +59,16 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
             };
           }
           
-          const totalPointsInRace = (r.total_points || 0) + (r.extra_point || 0);
+          const pointsBase = (r.total_points || 0);
+          const pointsExtra = (r.extra_point || 0);
+          
           driverStats[name].raceData[r.race_id] = {
-            points: totalPointsInRace,
+            points: pointsBase + pointsExtra,
+            hasExtra: pointsExtra > 0, // INFO O EXTRA BODU
             p1: r.pos_race_1,
             p2: r.pos_race_2
           };
-          driverStats[name].total += totalPointsInRace;
+          driverStats[name].total += (pointsBase + pointsExtra);
         });
 
         const sortedDrivers = Object.values(driverStats).sort((a: any, b: any) => b.total - a.total);
@@ -101,19 +98,23 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
                   {sortedDrivers.map((d: any, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={tdStyle}>{idx + 1}.</td>
-                      {/* STARTOVNÍ ČÍSLA JSOU STÁLE SKRYTÁ */}
                       <td style={{ ...tdStyle, fontWeight: '700' }}>{d.name}</td>
                       {races?.map(r => {
                         const raceInfo = d.raceData[r.id];
                         return (
                           <td key={r.id} style={{ ...tdStyle, textAlign: 'center' }}>
                             {raceInfo ? (
-                              <div>
-                                <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>{raceInfo.points}</div>
-                                {/* PODMÍNĚNÉ ZOBRAZENÍ POZIC */}
+                              <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>
+                                  {raceInfo.points}
+                                  {/* ZOBRAZENÍ EXTRA BODU */}
+                                  {raceInfo.hasExtra && (
+                                    <span style={{ color: '#fbbf24', fontSize: '0.7rem', verticalAlign: 'top', marginLeft: '2px' }}>+1</span>
+                                  )}
+                                </div>
                                 {r.show_race_position && (
                                   <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '4px' }}>
-                                    {raceInfo.p1}. / {raceInfo.p2}. jízda
+                                    {raceInfo.p1}. / {raceInfo.p2}. 
                                   </div>
                                 )}
                               </div>

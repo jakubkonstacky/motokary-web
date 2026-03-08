@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
+// Inicializace Supabase klienta
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -16,29 +17,30 @@ export default function VysledkyPage() {
   const [resultsByCat, setResultsByCat] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
-  // 1. Načtení sezón (roků) pro horní filtr
+  // 1. Načtení sezón a určení výchozího roku
   useEffect(() => {
     async function fetchInitial() {
       const { data } = await supabase.from('seasons').select('*').order('id', { ascending: false });
       if (data && data.length > 0) {
         setSeasons(data);
-        // Nastavíme aktuální rok (podle dnešního data) nebo nejnovější v DB
-        const currentYear = new Date().getFullYear();
-        const hasCurrentYear = data.some(s => s.id === currentYear);
-        setSelectedYear(hasCurrentYear ? currentYear : data[0].id);
+        
+        // Zkusíme nastavit aktuální rok podle systému, jinak vezmeme nejnovější v DB
+        const currentSystemYear = new Date().getFullYear();
+        const hasCurrentYear = data.some(s => s.id === currentSystemYear);
+        setSelectedYear(hasCurrentYear ? currentSystemYear : data[0].id);
       }
     }
     fetchInitial();
   }, []);
 
-  // 2. Načtení všech dat pro vybraný rok
+  // 2. Načtení dat pro zvolený rok
   useEffect(() => {
     if (!selectedYear) return;
 
     async function fetchData() {
       setLoading(true);
 
-      // Načtení kategorií seřazených podle tvého nového sloupce order_by
+      // Načtení kategorií (seřazené podle tvého sloupce order_by)
       const { data: catData } = await supabase
         .from('categories')
         .select('*')
@@ -46,7 +48,7 @@ export default function VysledkyPage() {
         .order('order_by', { ascending: true });
       setCategories(catData || []);
 
-      // Načtení všech závodů pro daný rok (seřazené podle ID YYYYZZ)
+      // Načtení závodů sezóny (podle ID YYYYZZ)
       const { data: raceData } = await supabase
         .from('races')
         .select('*')
@@ -54,7 +56,7 @@ export default function VysledkyPage() {
         .order('id', { ascending: true });
       setRaces(raceData || []);
 
-      // Načtení výsledků s JOINem na races (pro filtr sezóny) a drivers
+      // Načtení výsledků s JOINem na races (kvůli sezóně) a drivers
       const { data: resData, error } = await supabase
         .from('results')
         .select(`
@@ -65,12 +67,12 @@ export default function VysledkyPage() {
         .eq('races.season_id', selectedYear);
 
       if (error) {
-        console.error("Chyba při načítání dat:", error);
+        console.error("Chyba při stahování dat:", error);
         setLoading(false);
         return;
       }
 
-      // --- Seskupení dat do matice [Kategorie -> Jezdec -> Závody] ---
+      // --- Transformace dat do matice pro zobrazení ---
       const grouped: any = {};
       
       resData?.forEach((res: any) => {
@@ -83,12 +85,12 @@ export default function VysledkyPage() {
           grouped[catId][dId] = {
             name: res.drivers.full_name,
             number: res.drivers.start_number,
-            races: {},
+            raceResults: {},
             totalPoints: 0
           };
         }
 
-        grouped[catId][dId].races[res.race_id] = {
+        grouped[catId][dId].raceResults[res.race_id] = {
           p1: res.pos_race_1,
           p2: res.pos_race_2,
           pts: res.total_points,
@@ -105,28 +107,23 @@ export default function VysledkyPage() {
   }, [selectedYear]);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '20px', maxWidth: '1300px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
       <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>🏆 Výsledky šampionátu</h1>
-        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>Oficiální tabulky sezóny</p>
+        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>🏆 Výsledky Šampionátu</h1>
+        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>Motokáry Konstacký</p>
       </header>
 
-      {/* --- PŘEPÍNAČ SEZÓN --- */}
+      {/* FILTR ROKŮ */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '50px', flexWrap: 'wrap' }}>
         {seasons.map(s => (
           <button 
             key={s.id} 
             onClick={() => setSelectedYear(s.id)} 
             style={{
-              padding: '12px 25px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              transition: '0.3s',
-              background: selectedYear === s.id ? '#fbbf24' : '#1a1a1a',
+              padding: '12px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+              background: selectedYear === s.id ? '#fbbf24' : '#111',
               color: selectedYear === s.id ? '#000' : '#fff',
-              boxShadow: selectedYear === s.id ? '0 0 15px rgba(251, 191, 36, 0.4)' : 'none'
+              transition: '0.2s'
             }}
           >
             {s.id}
@@ -135,83 +132,79 @@ export default function VysledkyPage() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '50px', color: '#666' }}>Sestavuji tabulky pro rok {selectedYear}...</div>
+        <div style={{ textAlign: 'center', padding: '50px' }}>Sestavuji tabulky pro rok {selectedYear}...</div>
       ) : (
         categories.map(cat => {
-          // Získáme jezdce pro tuto kategorii a seřadíme je podle bodů
+          // Příprava jezdců pro danou kategorii, seřazení podle celkových bodů
           const catDrivers = resultsByCat[cat.id] 
             ? Object.values(resultsByCat[cat.id]).sort((a: any, b: any) => b.totalPoints - a.totalPoints) 
             : [];
           
           return (
             <div key={cat.id} style={{ marginBottom: '80px' }}>
-              {/* Název kategorie respektující order_by */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, color: '#fbbf24', textTransform: 'uppercase', fontSize: '1.5rem' }}>{cat.name}</h2>
-                <span style={{ background: '#222', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem', color: '#444' }}>{cat.id}</span>
+                <h2 style={{ margin: 0, color: '#fbbf24', textTransform: 'uppercase' }}>{cat.name}</h2>
+                <span style={{ color: '#444', fontSize: '0.9rem' }}>{cat.id}</span>
               </div>
 
-              <div style={{ overflowX: 'auto', background: '#111', borderRadius: '15px', border: '1px solid #222' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
+              <div style={{ overflowX: 'auto', background: '#0a0a0a', borderRadius: '15px', border: '1px solid #222' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
                   <thead>
-                    <tr style={{ background: '#1a1a1a', color: '#fbbf24', borderBottom: '2px solid #fbbf24' }}>
+                    <tr style={{ background: '#111', color: '#fbbf24', borderBottom: '2px solid #fbbf24' }}>
+                      <th style={{ padding: '20px', textAlign: 'center', width: '50px' }}>P.</th>
                       <th style={{ padding: '20px', textAlign: 'left' }}>Jezdec</th>
                       {races.map(r => (
-                        <th key={r.id} style={{ padding: '10px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '0.85rem' }}>{new Date(r.race_date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}</div>
-                          <div style={{ fontWeight: 'normal', color: '#666', fontSize: '0.7rem', textTransform: 'uppercase' }}>{r.name}</div>
+                        <th key={r.id} style={{ padding: '10px', textAlign: 'center', borderLeft: '1px solid #1a1a1a' }}>
+                          <div style={{ fontSize: '0.8rem' }}>{new Date(r.race_date).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric' })}</div>
+                          <div style={{ fontWeight: 'normal', color: '#666', fontSize: '0.65rem' }}>{r.name}</div>
                         </th>
                       ))}
-                      <th style={{ padding: '20px', background: '#fbbf24', color: '#000', textAlign: 'center' }}>BODY</th>
+                      <th style={{ padding: '20px', background: '#fbbf24', color: '#000', textAlign: 'center' }}>CELKEM</th>
                     </tr>
                   </thead>
                   <tbody>
                     {catDrivers.length > 0 ? (catDrivers as any[]).map((driver, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #222', background: idx % 2 === 1 ? '#141414' : 'transparent' }}>
+                      <tr key={idx} style={{ borderBottom: '1px solid #1a1a1a', background: idx % 2 === 1 ? '#0d0d0d' : 'transparent' }}>
+                        {/* SLOUPEC: POŘADÍ */}
+                        <td style={{ padding: '15px', textAlign: 'center', fontWeight: 'bold', color: idx === 0 ? '#fbbf24' : '#444', fontSize: '1.2rem' }}>
+                          {idx + 1}.
+                        </td>
+                        
                         <td style={{ padding: '15px 20px', textAlign: 'left' }}>
                           <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{driver.name}</div>
                           <div style={{ fontSize: '0.8rem', color: '#555' }}>#{driver.number}</div>
                         </td>
+
+                        {/* SLOPCE SE ZÁVODY */}
                         {races.map(r => {
-                          const res = driver.races[r.id];
+                          const res = driver.raceResults[r.id];
                           return (
-                                 <td key={r.id} style={{ padding: '10px', textAlign: 'center' }}>
-                                      {res ? (
-                                        <div>
-                                          {/* Pořadí v jízdách (např. 1 / 2) */}
-                                          <div style={{ fontWeight: 'bold', fontSize: '1rem', marginBottom: '2px' }}>
-                                            {res.p1} / {res.p2}
-                                          </div>
-                                          
-                                          {/* Zobrazení bodů: Celkové body b. (+ extra b.) - bez odčítání */}
-                                          <div style={{ fontSize: '0.85rem' }}>
-                                            {res.pole && res.extra > 0 ? (
-                                              <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
-                                                {res.pts} b. <span style={{ fontSize: '0.75rem', opacity: 0.9 }}>(+ {res.extra} b.)</span>
-                                              </span>
-                                            ) : (
-                                              <span style={{ color: '#ccc' }}>
-                                                {res.pts} b.
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <span style={{ color: '#333' }}>X</span>
-                                      )}
-                                    </td>
+                            <td key={r.id} style={{ padding: '10px', textAlign: 'center', borderLeft: '1px solid #1a1a1a' }}>
+                              {res ? (
+                                <div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{res.p1} / {res.p2}</div>
+                                  <div style={{ fontSize: '0.8rem', marginTop: '3px' }}>
+                                    {res.pole && res.extra > 0 ? (
+                                      <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                                        {res.pts} b. <span style={{ fontSize: '0.7rem', opacity: 0.8 }}>(+ {res.extra} b.)</span>
+                                      </span>
+                                    ) : (
+                                      <span style={{ color: '#aaa' }}>{res.pts} b.</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : <span style={{ color: '#222' }}>X</span>}
+                            </td>
                           );
                         })}
-                        <td style={{ padding: '20px', fontWeight: 'bold', fontSize: '1.3rem', textAlign: 'center', background: 'rgba(251, 191, 36, 0.03)' }}>
+
+                        {/* CELKOVÉ BODY V SEZÓNĚ */}
+                        <td style={{ padding: '20px', fontWeight: 'bold', fontSize: '1.4rem', textAlign: 'center', background: 'rgba(251, 191, 36, 0.05)', color: '#fbbf24' }}>
                           {driver.totalPoints}
                         </td>
                       </tr>
                     )) : (
-                      <tr>
-                        <td colSpan={races.length + 2} style={{ padding: '40px', textAlign: 'center', color: '#444' }}>
-                          V této kategorii zatím nebyly v roce {selectedYear} nahrány žádné výsledky.
-                        </td>
-                      </tr>
+                      <tr><td colSpan={races.length + 3} style={{ padding: '40px', textAlign: 'center', color: '#444' }}>V této kategorii zatím nejsou žádné výsledky.</td></tr>
                     )}
                   </tbody>
                 </table>

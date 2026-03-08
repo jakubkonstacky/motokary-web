@@ -18,10 +18,12 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
   const { data: resultsData } = await supabase.from('results').select('*, drivers(full_name)');
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px', minHeight: '100vh' }}>
+    <div style={containerStyle}>
       
+      {/* Hlavní nadpis - Text posunut výše */}
       <h1 style={mainTitleStyle}>Výsledky šampionátu</h1>
 
+      {/* Navigace mezi sezónami - Zobrazen pouze rok */}
       <div style={seasonNavStyle}>
         {years.map(year => (
           <Link key={year} href={`/vysledky?year=${year}`} style={{
@@ -29,7 +31,7 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
             background: selectedYear === year ? '#fbbf24' : 'rgba(255,255,255,0.05)',
             color: selectedYear === year ? '#000' : '#888',
           }}>
-            Sezóna {year}
+            {year}
           </Link>
         ))}
       </div>
@@ -47,7 +49,7 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
           const pExtra = r.extra_point || 0;
           
           driverStats[name].raceData[r.race_id] = { display: pBase, extra: pExtra > 0, p1: r.pos_race_1, p2: r.pos_race_2 };
-          driverStats[name].total += (pBase + pExtra); // CELKEM je součet obou
+          driverStats[name].total += (pBase + pExtra);
         });
 
         const sortedDrivers = Object.values(driverStats).sort((a: any, b: any) => b.total - a.total);
@@ -103,7 +105,23 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
 }
 
 // KONSTANTY STYLŮ
-const mainTitleStyle: any = { fontSize: '2.5rem', fontWeight: '800', color: '#fbbf24', textTransform: 'none', marginBottom: '40px', textAlign: 'center' };
+const containerStyle: any = { 
+  maxWidth: '1400px', 
+  margin: '0 auto', 
+  padding: '10px 20px 40px 20px', // Snížené horní polstrování pro posun textu nahoru
+  minHeight: '100vh' 
+};
+
+const mainTitleStyle: any = { 
+  fontSize: '2.5rem', 
+  fontWeight: '800', 
+  color: '#fbbf24', 
+  textTransform: 'none', 
+  marginBottom: '40px', 
+  textAlign: 'center',
+  marginTop: '0' // Odstranění horního okraje pro maximální posun nahoru
+};
+
 const categoryTitleStyle: any = { fontSize: '1.8rem', fontWeight: '800', color: '#fbbf24', marginBottom: '25px', textTransform: 'none' };
 const seasonNavStyle: any = { display: 'flex', justifyContent: 'center', gap: '15px', marginBottom: '50px' };
 const seasonLinkBase: any = { padding: '10px 25px', borderRadius: '30px', textDecoration: 'none', fontWeight: '700', border: '1px solid rgba(255,255,255,0.1)' };

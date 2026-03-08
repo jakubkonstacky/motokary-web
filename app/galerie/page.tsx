@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
+// Inicializace Supabase klienta
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -10,110 +11,90 @@ const supabase = createClient(
 
 export default function GaleriePage() {
   const [photos, setPhotos] = useState<any[]>([]);
-  const [year, setYear] = useState<number | null>(null);
-  const [seasons, setSeasons] = useState<number[]>([]); // Dynamický seznam let z DB
   const [loading, setLoading] = useState(true);
 
-  // 1. NAČTENÍ DOSTUPNÝCH SEZÓN (ROKŮ) Z TABULKY PHOTOS
   useEffect(() => {
-    async function fetchPhotoSeasons() {
-      const { data } = await supabase
-        .from('photos')
-        .select('year');
-
-      if (data) {
-        // Vytvoříme seznam unikátních roků z fotek a seřadíme je
-        const uniqueYears = Array.from(new Set(data.map(item => item.year)))
-          .filter((y): y is number => y !== null)
-          .sort((a, b) => b - a);
-
-        setSeasons(uniqueYears);
-        
-        // Nastavíme výchozí rok na nejnovější nalezený
-        if (uniqueYears.length > 0 && !year) {
-          setYear(uniqueYears[0]);
-        }
-      }
-    }
-    fetchPhotoSeasons();
-  }, []);
-
-  // 2. NAČTENÍ FOTEK PRO VYBRANÝ ROK
-  useEffect(() => {
-    if (!year) return;
-
     async function fetchPhotos() {
       setLoading(true);
-      const { data } = await supabase
-        .from('photos')
+      // Předpokládáme tabulku "gallery" s poli: url, title, category
+      const { data, error } = await supabase
+        .from('gallery')
         .select('*')
-        .eq('year', year)
         .order('created_at', { ascending: false });
 
-      setPhotos(data || []);
+      if (error) {
+        console.error("Chyba při načítání galerie:", error);
+      } else {
+        setPhotos(data || []);
+      }
       setLoading(false);
     }
+
     fetchPhotos();
-  }, [year]);
+  }, []);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ color: '#fbbf24', textAlign: 'center', fontSize: '2.5rem' }}>📸 Fotogalerie</h1>
-      
-      {/* --- DYNAMICKÝ FILTR ROČNÍKŮ --- */}
-      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px', flexWrap: 'wrap' }}>
-        {seasons.map((s) => (
-          <button
-            key={s}
-            onClick={() => setYear(s)}
-            style={{
-              padding: '10px 25px',
-              borderRadius: '25px',
-              border: '1px solid #fbbf24',
-              cursor: 'pointer',
-              backgroundColor: year === s ? '#fbbf24' : 'transparent',
-              color: year === s ? '#000' : '#fbbf24',
-              fontWeight: 'bold',
-              transition: '0.3s'
-            }}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+    <div style={{ padding: '40px 20px', maxWidth: '1200px', margin: '0 auto', color: '#fff', fontFamily: 'sans-serif' }}>
+      <header style={{ textAlign: 'center', marginBottom: '50px' }}>
+        <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie Týmu</h1>
+        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>Záběry z trati i depa</p>
+      </header>
 
-      {/* --- GRID S FOTKAMI --- */}
       {loading ? (
-        <p style={{ textAlign: 'center', color: '#666' }}>Načítám vzpomínky...</p>
+        <div style={{ textAlign: 'center', color: '#444', marginTop: '50px' }}>Načítám fotografie...</div>
       ) : (
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-          gap: '20px' 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+          gap: '25px' 
         }}>
           {photos.length > 0 ? photos.map((photo) => (
             <div key={photo.id} style={{ 
               background: '#111', 
-              borderRadius: '10px', 
+              borderRadius: '15px', 
               overflow: 'hidden', 
-              border: '1px solid #222'
-            }}>
-              <img 
-                src={photo.url} 
-                alt={photo.caption} 
-                style={{ width: '100%', height: '250px', objectFit: 'cover' }} 
-              />
-              <div style={{ padding: '15px' }}>
-                <div style={{ color: '#fbbf24', fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                  {photo.race_name || 'Závod'}
+              border: '1px solid #222',
+              transition: 'transform 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {/* KONTEJNER PRO OBRÁZEK: Fixní poměr 3:2 bez ořezu */}
+              <div style={{ 
+                width: '100%', 
+                aspectRatio: '3 / 2', 
+                background: '#050505', // Černé pozadí pro případné okraje
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderBottom: '1px solid #222'
+              }}>
+                <img 
+                  src={photo.url} 
+                  alt={photo.title}
+                  style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '100%', 
+                    objectFit: 'contain' // Zobrazí fotku CELOU
+                  }} 
+                />
+              </div>
+
+              {/* POPISKA POD FOTKOU */}
+              <div style={{ padding: '20px' }}>
+                <div style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px' }}>
+                  {photo.category || 'Závody'}
                 </div>
-                <p style={{ margin: '5px 0 0 0', fontSize: '1rem' }}>{photo.caption}</p>
+                <div style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '500' }}>
+                  {photo.title}
+                </div>
               </div>
             </div>
           )) : (
-            <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666', padding: '50px' }}>
-              Pro tento rok zatím nemáme v galerii žádné fotky.
-            </p>
+            <div style={{ colSpan: '100%', textAlign: 'center', color: '#444', padding: '100px 0' }}>
+              V galerii zatím nejsou žádné fotky.
+            </div>
           )}
         </div>
       )}

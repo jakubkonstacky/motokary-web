@@ -37,7 +37,17 @@ export default async function HomePage() {
       
       {/* KALENDÁŘ ZÁVODŮ - UPRAVENÝ NADPIS S DYNAMICKÝM ROKEM */}
       <section>
-        <h2 style={headerStyle}>📅 Kalendář závodů {currentYear}</h2>
+// Najdi nadpisy v sekcích a uprav je takto:
+<h2 style={{ 
+  fontSize: '2.5rem', 
+  fontWeight: '800', 
+  color: '#fbbf24', // Stejná žlutá jako v galerii
+  textTransform: 'none', // Zrušení velkých písmen
+  marginBottom: '30px',
+  fontFamily: 'inherit' // Zajistí stejný font jako u galerie
+}}>
+  Kalendář závodů {currentYear}
+</h2>
         <div style={glassCardStyle}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
@@ -59,9 +69,15 @@ export default async function HomePage() {
       {/* PRŮBĚŽNÉ POŘADÍ */}
       <section>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={headerStyle}>🏆 Průběžné pořadí</h2>
+<h2 style={{ 
+  fontSize: '2.5rem', 
+  fontWeight: '800', 
+  color: '#fbbf24', 
+  textTransform: 'none', 
+  marginBottom: '30px' 
+}}>🏆 Průběžné pořadí</h2>
           <Link href="/vysledky" style={{ color: '#fbbf24', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 'bold' }}>
-            Kompletni vysledky -{'>'}
+            Kompletní výsledky -{'>'}
           </Link>
         </div>
         

@@ -3,7 +3,7 @@ import Link from 'next/link';
  
 export const metadata = { 
   title: 'ENZO Cup - zavody motokar', 
-  description: 'Oficiální výsledky a kalendář šampionátu motokár ENZO Cup' 
+  description: 'Oficiální výsledky a kalendář šampionátu motokár ENZO Cup 2026' 
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

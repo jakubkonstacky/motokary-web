@@ -15,35 +15,38 @@ export default function GaleriePage() {
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // 1. Načtení sezón pro horní tlačítka
+  // 1. Načtení sezón (pro ty žluté knoflíky nahoře)
   useEffect(() => {
     async function fetchSeasons() {
       const { data } = await supabase.from('seasons').select('*').order('id', { ascending: false });
       if (data && data.length > 0) {
         setSeasons(data);
+        // Automaticky vybere nejnovější rok z DB
         const currentYear = new Date().getFullYear();
-        // Nastavíme rok 2026 nebo 2025 jako výchozí
         setSelectedYear(data.some(s => s.id === currentYear) ? currentYear : data[0].id);
       }
     }
     fetchSeasons();
   }, []);
 
-  // 2. Načtení fotek z tabulky "photos" podle sloupce "year"
+  // 2. Načtení fotek z tabulky PHOTOS podle sloupce YEAR
   useEffect(() => {
     if (!selectedYear) return;
 
     async function fetchPhotos() {
       setLoading(true);
+      console.log("Hledám fotky pro rok:", selectedYear);
+
       const { data, error } = await supabase
-        .from('photos') // Tvoje tabulka v databázi
+        .from('photos') // OPRAVENO NA "photos"
         .select('*')
-        .eq('year', selectedYear) // Tvůj sloupec pro rok
+        .eq('year', selectedYear) // OPRAVENO NA "year"
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("Chyba načítání:", error);
+        console.error("Chyba Supabase:", error.message);
       } else {
+        console.log("Načtená data:", data);
         setPhotos(data || []);
       }
       setLoading(false);
@@ -59,21 +62,22 @@ export default function GaleriePage() {
       
       <header style={{ textAlign: 'center', marginBottom: '30px' }}>
         <h1 style={{ color: '#fbbf24', fontSize: '2.5rem', marginBottom: '10px' }}>📸 Galerie</h1>
-        <p style={{ color: '#666', textTransform: 'uppercase' }}>
+        <p style={{ color: '#666', textTransform: 'uppercase', letterSpacing: '2px' }}>
           Sezóna {selectedYear}
         </p>
       </header>
 
-      {/* TLAČÍTKA ROKŮ (FILTR) */}
+      {/* TLAČÍTKA ROKŮ */}
       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '40px' }}>
         {seasons.map(s => (
           <button 
             key={s.id} 
             onClick={() => setSelectedYear(s.id)}
             style={{
-              padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
+              padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
               background: selectedYear === s.id ? '#fbbf24' : '#111',
-              color: selectedYear === s.id ? '#000' : '#fff'
+              color: selectedYear === s.id ? '#000' : '#fff',
+              transition: '0.2s'
             }}
           >
             {s.id}
@@ -82,10 +86,10 @@ export default function GaleriePage() {
       </div>
 
       {loading ? (
-        <p style={{ textAlign: 'center', color: '#444' }}>Hledám fotky v databázi...</p>
+        <p style={{ textAlign: 'center', color: '#444' }}>Načítám...</p>
       ) : (
         <div style={{ 
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' 
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' 
         }}>
           {photos.length > 0 ? photos.map((photo, index) => (
             <div 
@@ -102,24 +106,39 @@ export default function GaleriePage() {
               </div>
               <div style={{ padding: '15px' }}>
                 <div style={{ color: '#fbbf24', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                    {photo.race_name} {/* Sloupec "race_name" */}
+                    {photo.race_name} {/* Sloupec z tvé DB */}
                 </div>
                 <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
-                    {photo.caption} {/* Sloupec "caption" */}
+                    {photo.caption} {/* Sloupec z tvé DB */}
                 </div>
               </div>
             </div>
           )) : (
-            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px', color: '#444' }}>
-              Pro rok {selectedYear} nemáš v tabulce "photos" žádné záznamy.
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '100px 0', color: '#444' }}>
+              <p>V sezóně {selectedYear} nebyly v tabulce "photos" nalezeny žádné záznamy.</p>
+              <p style={{ fontSize: '0.8rem' }}>Zkontroluj, zda mají fotky v Supabase ve sloupci "year" skutečně hodnotu {selectedYear}.</p>
             </div>
           )}
         </div>
       )}
 
-      {/* SLIDE SHOW (LIGHTBOX) */}
+      {/* MODAL SLIDESHOW (LIGHTBOX) */}
       {selectedIndex !== null && (
         <div 
           onClick={() => setSelectedIndex(null)}
           style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}
         >
+          <button style={{ position: 'absolute', top: '20px', right: '30px', background: 'none', border: 'none', color: '#fff', fontSize: '2.5rem', cursor: 'pointer' }}>✕</button>
+          <button onClick={prev} style={{ position: 'absolute', left: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '20px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem' }}>❮</button>
+          
+          <div style={{ maxWidth: '90%', maxHeight: '80%', textAlign: 'center' }}>
+            <img src={photos[selectedIndex].url} style={{ maxWidth: '100%', maxHeight: '75vh', borderRadius: '8px', objectFit: 'contain' }} onClick={(e) => e.stopPropagation()} />
+            <h3 style={{ color: '#fbbf24', marginTop: '20px' }}>{photos[selectedIndex].caption}</h3>
+          </div>
+
+          <button onClick={next} style={{ position: 'absolute', right: '20px', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '20px', borderRadius: '50%', cursor: 'pointer', fontSize: '1.5rem' }}>❯</button>
+        </div>
+      )}
+    </div>
+  );
+}

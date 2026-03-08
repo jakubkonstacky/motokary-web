@@ -1,13 +1,15 @@
-import './globals.css';
+import './globals.css'; // Tato řádka teď najde ten nový soubor
 import Link from 'next/link';
 
-export const metadata = { title: 'Motokáry Konstacký', description: 'Oficiální výsledky týmu' };
+export const metadata = { 
+  title: 'Motokáry Konstacký', 
+  description: 'Oficiální výsledky týmu' 
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="cs">
-      <body style={{ margin: 0, backgroundColor: '#050505', color: '#fff', fontFamily: '"Inter", sans-serif' }}>
-        {/* SLEEK NAVIGATION BAR */}
+      <body>
         <nav style={{ 
           position: 'sticky', top: 0, zIndex: 100,
           background: 'rgba(5, 5, 5, 0.8)', backdropFilter: 'blur(10px)',
@@ -27,12 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 { name: 'Kontakt', href: '/kontakt' }
               ].map((item) => (
                 <Link key={item.name} href={item.href} style={{ 
-                  color: '#aaa', textDecoration: 'none', fontSize: '0.9rem', 
-                  fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px',
-                  transition: '0.3s'
-                }} 
-                onMouseEnter={(e) => e.currentTarget.style.color = '#fbbf24'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#aaa'}>
+                  color: '#aaa', textDecoration: 'none', fontSize: '0.85rem', 
+                  fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px'
+                }}>
                   {item.name}
                 </Link>
               ))}

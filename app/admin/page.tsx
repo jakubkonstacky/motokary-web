@@ -47,7 +47,8 @@ export default function MasterAdminPage() {
     setTimeout(() => setStatus({ msg: '', type: '' }), 5000);
   };
 
-  // --- AUTENTIZAČNÍ BRÁNA ---
+
+// --- AUTENTIZAČNÍ BRÁNA (Vylepšená) ---
   if (!isAuthorized) {
     return (
       <div style={{ 
@@ -56,23 +57,44 @@ export default function MasterAdminPage() {
       }}>
         <h2 style={{ color: '#fbbf24', marginBottom: '20px' }}>🔐 Admin Vstup</h2>
         <input 
-          type="password" 
+          type="text" // Změněno na text, abys viděl, co píšeš (pak můžeš vrátit na password)
           placeholder="Zadej heslo"
           style={inputStyle}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && password === 'admin123' && setIsAuthorized(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              if (password.trim() === 'admin123') setIsAuthorized(true);
+              else alert(`Zadals: "${password.trim()}" - to není admin123`);
+            }
+          }}
         />
         <button 
-          onClick={() => password === 'admin123' ? setIsAuthorized(true) : alert('Špatné heslo!')}
+          onClick={() => {
+            console.log("Zadané heslo:", password.trim()); // Uvidíš v konzoli (F12)
+            if (password.trim() === 'admin123') {
+              setIsAuthorized(true);
+            } else {
+              alert('Špatné heslo! Zkus admin123 (bez mezer)');
+            }
+          }}
           style={{ ...submitBtnStyle, marginTop: '20px' }}
         >
           Vstoupit
         </button>
-        <p style={{ color: '#444', fontSize: '0.8rem', marginTop: '15px' }}>Výchozí heslo: admin123</p>
+        
+        {/* ZÁCHRANNÉ TLAČÍTKO - Pokud jsi v lokálním vývoji, můžeš ho použít pro bypass */}
+        <p 
+          onClick={() => setIsAuthorized(true)} 
+          style={{ color: '#222', fontSize: '0.6rem', marginTop: '20px', cursor: 'pointer' }}
+        >
+          (Tajný nouzový vstup)
+        </p>
       </div>
     );
   }
+
+
 
   // --- HANDLERY ---
 

@@ -10,6 +10,30 @@ const supabase = createClient(
 );
 
 export default function MasterAdminPage() {
+  const [password, setPassword] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // Jednoduchá kontrola hesla před zobrazením obsahu
+  if (!isAuthorized) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '100px' }}>
+        <h2>Vstup pro administrátora</h2>
+        <input 
+          type="password" 
+          onChange={(e) => setPassword(e.target.value)} 
+          placeholder="Heslo"
+          style={{ padding: '10px', borderRadius: '5px', border: '1px solid #333', background: '#222', color: '#fff' }}
+        />
+        <button 
+          onClick={() => password === 'MojeTajneHeslo123' ? setIsAuthorized(true) : alert('Špatně!')}
+          style={{ padding: '10px 20px', marginLeft: '10px', background: '#fbbf24', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+        >
+          Vstoupit
+        </button>
+      </div>
+    );
+  }
+  
   const [activeTab, setActiveTab] = useState('results');
   const [status, setStatus] = useState({ msg: '', type: '' });
   

@@ -1,6 +1,6 @@
 import './globals.css';
 import Link from 'next/link';
-
+ 
 export const metadata = { 
   title: 'ENZO Cup - zavody motokar', 
   description: 'Oficiální výsledky a kalendář šampionátu motokár ENZO Cup' 

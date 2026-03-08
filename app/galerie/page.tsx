@@ -37,6 +37,7 @@ export default function GaleriePage() {
     }
   };
 
+
   const prevPhoto = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (selectedIndex !== null) {

@@ -6,6 +6,8 @@ export const metadata = {
   description: 'Oficiální výsledky týmu' 
 };
 
+// ... (ostatní importy zůstávají)
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="cs">
@@ -17,24 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           padding: '15px 0'
         }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
+            {/* ZMĚNA ZDE: ENZO CUP logo */}
             <Link href="/" style={{ fontSize: '1.4rem', fontWeight: '900', color: '#fbbf24', textDecoration: 'none', letterSpacing: '-1px' }}>
-              KONSTACKÝ<span style={{ color: '#fff' }}>RACING</span>
+              ENZO<span style={{ color: '#fff' }}>CUP</span>
             </Link>
+            
+            {/* ... (zbytek menu zůstává stejný) */}
             <div style={{ display: 'flex', gap: '30px' }}>
-              {[
-                { name: 'Domů', href: '/' },
-                { name: 'Výsledky', href: '/vysledky' },
-                { name: 'Galerie', href: '/galerie' },
-                { name: 'O nás', href: '/o-nas' },
-                { name: 'Kontakt', href: '/kontakt' }
-              ].map((item) => (
-                <Link key={item.name} href={item.href} style={{ 
-                  color: '#aaa', textDecoration: 'none', fontSize: '0.85rem', 
-                  fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px'
-                }}>
-                  {item.name}
-                </Link>
-              ))}
+              {/* Odkazy Domů, Výsledky, Galerie... */}
             </div>
           </div>
         </nav>

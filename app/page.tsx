@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 export default async function HomePage() {
-  const currentYear = 2026;
+  const currentYear = latestSeason?.[0]?.season_id || new Date().getFullYear();;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

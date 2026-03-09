@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 export default async function HomePage() {
-  // 1. Dynamické zjištění nejnovějšího roku
+  // Dynamické zjištění nejnovějšího roku
   const { data: latestSeason } = await supabase
     .from('races')
     .select('season_id')
@@ -21,7 +21,7 @@ export default async function HomePage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 2. Načtení dat včetně nových sloupců
+  // Načtení dat včetně sloupců time a desc
   const { data: races } = await supabase.from('races')
     .select('*')
     .eq('season_id', currentYear)
@@ -35,14 +35,14 @@ export default async function HomePage() {
   const { data: resultsData } = await supabase.from('results')
     .select('*, drivers(full_name)');
 
-  // Pomocné pole pro české dny v týdnu
   const czechDays = ['NE', 'PO', 'ÚT', 'ST', 'ČT', 'PÁ', 'SO'];
 
   return (
     <div style={THEME.container}>
+      {/* Mřížka v poměru 70% / 30% */}
       <div style={twoColumnGridStyle}>
         
-        {/* LEVÝ SLOUPY: Rozšířený Kalendář závodů */}
+        {/* LEVÝ SLOUPY (70%): Kalendář závodů */}
         <section>
           <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
             Kalendář závodů {currentYear}
@@ -54,44 +54,42 @@ export default async function HomePage() {
                 {races?.map((race, idx) => {
                   const rDate = new Date(race.race_date);
                   const isPast = rDate < today;
-                  
-                  // Formátování: PO 26.04.2026
                   const dayName = czechDays[rDate.getDay()];
                   const dateStr = rDate.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                  
-                  // Oříznutí času z formatu HH:mm:ss na HH:mm
                   const timeStr = race.time ? race.time.substring(0, 5) : '08:30';
 
                   return (
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                      {/* Sloupec s datem a časem */}
-                      <td style={{ ...THEME.td, padding: '20px', width: '180px', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
-                        <div style={{ color: '#fbbf24', fontWeight: '800', fontSize: '1.05rem' }}>
-                          {dayName} {dateStr}
-                        </div>
-                        <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      {/* Datum a čas v jednom bloku s nowrap */}
+                      <td style={{ ...THEME.td, padding: '20px', width: '220px', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '1.05rem', marginRight: '10px' }}>
+                           {dateStr} - {dayName}
+                        </span>
+                        <span style={{ fontSize: '0.85rem', color: '#888', fontWeight: '600' }}>
                           🕗 {timeStr}
-                        </div>
+                        </span>
                       </td>
 
-                      {/* Sloupec s názvem a popisem */}
-                      <td style={{ ...THEME.td, padding: '20px', verticalAlign: 'top' }}>
-                        <div style={{ fontWeight: '700', fontSize: '1.1rem' }}>
-                          {isPast ? (
-                            <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              {race.name} <span style={{ color: '#fbbf24' }}>→</span>
-                            </Link>
-                          ) : (
-                            <span style={{ color: '#fff' }}>{race.name}</span>
+                      {/* Název a popis */}
+                      <td style={{ ...THEME.td, padding: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
+                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                            {isPast ? (
+                              <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
+                                {race.name} <span style={{ color: '#fbbf24' }}>→</span>
+                              </Link>
+                            ) : (
+                              <span style={{ color: '#fff' }}>{race.name}</span>
+                            )}
+                          </div>
+                          
+                          {/* Popis závodu na stejném řádku, pokud se vejde */}
+                          {race.desc && (
+                            <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '400', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              | {race.desc}
+                            </div>
                           )}
                         </div>
-                        
-                        {/* Zobrazení popisu závodu (sloupec desc) */}
-                        {race.desc && (
-                          <div style={{ fontSize: '0.85rem', color: '#aaa', marginTop: '8px', fontWeight: '400', lineHeight: '1.4' }}>
-                            {race.desc}
-                          </div>
-                        )}
                       </td>
                     </tr>
                   );
@@ -101,10 +99,10 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* PRAVÝ SLOUPY: Průběžné pořadí (zůstává TOP 3) */}
+        {/* PRAVÝ SLOUPY (30%): Průběžné pořadí */}
         <section>
           <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
-            Průběžné pořadí
+            Pořadí
           </h2>
           {categories?.map((cat) => {
             const driverTotals: any = {};
@@ -117,16 +115,16 @@ export default async function HomePage() {
             if (top3.length === 0) return null;
 
             return (
-              <div key={cat.id} style={{ marginBottom: '30px' }}>
-                <h3 style={{ ...THEME.categoryTitle, fontSize: '1.3rem', marginBottom: '15px' }}>🏆 {cat.name}</h3>
+              <div key={cat.id} style={{ marginBottom: '25px' }}>
+                <h3 style={{ ...THEME.categoryTitle, fontSize: '1.1rem', marginBottom: '10px' }}>🏆 {cat.name}</h3>
                 <div style={THEME.tableContainer}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <tbody>
                       {top3.map(([name, total]: any, idx) => (
                         <tr key={name} style={{ borderBottom: idx === 2 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ ...THEME.td, padding: '12px 20px', width: '40px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : '#888' }}>{idx + 1}.</td>
-                          <td style={{ ...THEME.td, padding: '12px 20px', fontWeight: '700' }}>{name}</td>
-                          <td style={{ ...THEME.td, padding: '12px 20px', textAlign: 'right', fontWeight: '900', color: '#fbbf24' }}>{total} b.</td>
+                          <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : '#888', fontSize: '0.9rem' }}>{idx + 1}.</td>
+                          <td style={{ ...THEME.td, padding: '10px 15px', fontWeight: '700', fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</td>
+                          <td style={{ ...THEME.td, padding: '10px 15px', textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '0.9rem' }}>{total}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -141,9 +139,10 @@ export default async function HomePage() {
   );
 }
 
+// DEFINICE POMĚRU 70/30
 const twoColumnGridStyle: any = { 
   display: 'grid', 
-  gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 
-  gap: '50px',
+  gridTemplateColumns: '7fr 3fr', 
+  gap: '40px',
   alignItems: 'start'
 };

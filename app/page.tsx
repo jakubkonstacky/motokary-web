@@ -38,13 +38,13 @@ export default async function HomePage() {
                       <td style={{ ...THEME.td, padding: '15px 20px', width: '180px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
                         {dateStr}
                       </td>
-                      <td style={{ ...THEME.td, padding: '15px 20px',  width: '380px', fontWeight: '700' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px',  width: '280px', fontWeight: '700' }}>
                         {race.name}
                       </td>
-                      <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700',color: '#fbbf24' }}>
                         {isPast ? (
-                          <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>{race.name} →</Link>
-                        ) : race.name}
+                          <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>→ Zobraz výsledky </Link>
+                        ) }
                       </td>
                     </tr>
                   );

@@ -39,10 +39,10 @@ export default async function HomePage() {
 
   return (
     <div style={THEME.container}>
-      {/* Mřížka v poměru 70% / 30% */}
+      {/* Mřížka v poměru 60% / 40% */}
       <div style={twoColumnGridStyle}>
         
-        {/* LEVÝ SLOUPY (70%): Kalendář závodů */}
+        {/* LEVÝ SLOUPY (60%): Kalendář závodů */}
         <section>
           <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
             Kalendář závodů {currentYear}
@@ -76,6 +76,7 @@ export default async function HomePage() {
                           <div style={{ fontWeight: '800', fontSize: '1.2rem', whiteSpace: 'nowrap' }}>
                             <span style={{ color: '#fff' }}>{race.name}</span>                            
                           </div>
+                        </div>  
                       </td>
 
 
@@ -102,7 +103,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* PRAVÝ SLOUPY (30%): Průběžné pořadí */}
+        {/* PRAVÝ SLOUPY (40%): Průběžné pořadí */}
         <section>
           <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
             Pořadí

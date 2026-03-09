@@ -10,7 +10,6 @@ const supabase = createClient(
 );
 
 export default async function HomePage() {
-  // Dynamické zjištění nejnovějšího roku
   const { data: latestSeason } = await supabase
     .from('races')
     .select('season_id')
@@ -21,7 +20,6 @@ export default async function HomePage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Načtení dat včetně sloupců time a desc
   const { data: races } = await supabase.from('races')
     .select('*')
     .eq('season_id', currentYear)
@@ -39,7 +37,6 @@ export default async function HomePage() {
 
   return (
     <div style={THEME.container}>
-      {/* Mřížka v poměru 60% / 40% */}
       <div style={twoColumnGridStyle}>
         
         {/* LEVÝ SLOUPY (60%): Kalendář závodů */}
@@ -60,41 +57,38 @@ export default async function HomePage() {
 
                   return (
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                      {/* Datum a čas v jednom bloku s nowrap */}
-                      <td style={{ ...THEME.td, padding: '10px', width: '200px', whiteSpace: 'nowrap' }}>
-                        <span style={{ color: '#fbbf24', fontWeight: '600', fontSize: '1.05rem', marginRight: '30px' }}>
+                      
+                      {/* 1. Sloupec: Datum, Den a Čas */}
+                      <td style={{ ...THEME.td, padding: '15px 20px', width: '220px', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: '#fbbf24', fontWeight: '600', fontSize: '1.05rem', marginRight: '15px' }}>
                            {dateStr} - {dayName}
                         </span>
                         <span style={{ fontSize: '0.85rem', color: '#888', fontWeight: '500' }}>
-                          🕗 {timeStr}
+                           🕗 {timeStr}
                         </span>
                       </td>
 
-                    {/* Název  */}
-                      <td style={{ ...THEME.td, padding: '20px' }}>
+                      {/* 2. Sloupec: Název a Popis/Odkaz sloučen do jednoho pro lepší čitelnost */}
+                      <td style={{ ...THEME.td, padding: '15px 20px' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '800', fontSize: '1.2rem', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: '800', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
                             <span style={{ color: '#fff' }}>{race.name}</span>                            
                           </div>
-                        </div>  
-                      </td>
-
-
-                   {/* Popis nebo link na vysledky */}
-                      <td style={{ ...THEME.td, padding: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>                            
+                          
+                          <div style={{ fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                             {isPast ? (
-                              <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
-                                {race.name} <span style={{ color: '#fbbf24' }}>→ Zobraz výsledky</span>
+                              <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fbbf24', textDecoration: 'none', fontWeight: '600' }}>
+                                → Zobraz výsledky
                               </Link>
                             ) : (
-                              <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              | {race.desc}
-                              </div>
+                              <span style={{ color: '#aaa', fontWeight: '400' }}>
+                                | {race.desc}
+                              </span>
                             )}
-                          </div>                          
+                          </div>
+                        </div>
                       </td>
+
                     </tr>
                   );
                 })}
@@ -143,10 +137,9 @@ export default async function HomePage() {
   );
 }
 
-// DEFINICE POMĚRU 60/40
 const twoColumnGridStyle: any = { 
   display: 'grid', 
   gridTemplateColumns: '6fr 4fr', 
-  gap: '20px',
+  gap: '30px', // Mírně zvětšená mezera pro vzdušnost
   alignItems: 'start'
 };

@@ -16,7 +16,8 @@ export default async function HomePage() {
     .order('season_id', { ascending: false })
     .limit(1);
 
-  const currentYear = latestSeason?.[0]?.season_id || new Date().getFullYear();
+  {/*const currentYear = latestSeason?.[0]?.season_id || new Date().getFullYear(); */}
+  const currentYear = 2025;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

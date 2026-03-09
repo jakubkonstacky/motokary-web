@@ -42,9 +42,9 @@ export default async function HomePage() {
                         {race.name}
                       </td>                      
                       <td style={{ ...THEME.td, padding: '15px 20px',width: 'š40px', textAlign: 'left' fontWeight: '700' }}>
-                        isPast ? (
+                      { isPast ? (
                           <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}> → Zobraz výsledky </Link>
-                        ) 
+                        )  }
                       </td>
                     </tr>
                   );

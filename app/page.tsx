@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { THEME } from '@/lib/theme'; // Import centrálních stylů
+import Link from 'next/link';
 
 export const revalidate = 0;
 
@@ -10,6 +11,8 @@ const supabase = createClient(
 
 export default async function HomePage() {
   const currentYear = 2026;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Načtení dat ze Supabase
   const { data: races } = await supabase.from('races')
@@ -31,29 +34,47 @@ export default async function HomePage() {
       {/* Dvou sloupcový layout */}
       <div style={twoColumnGridStyle}>
         
-        {/* LEVÝ SLOUPY: Kalendář závodů */}
+        {/* LEVÝ SLOUPY: Kalendář závodů v jedné bublině */}
         <section>
           <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
             Kalendář závodů {currentYear}
           </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {races?.map((race) => (
-              <div key={race.id} style={THEME.tableContainer}>
-                <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ color: '#fbbf24', fontWeight: '800', fontSize: '1.1rem' }}>
-                      {new Date(race.race_date).toLocaleDateString('cs-CZ')}
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: '700', marginTop: '3px' }}>
-                      {race.name}
-                    </div>
-                  </div>
-                  <div style={{ opacity: 0.3, fontWeight: '900', fontSize: '1.2rem' }}>
-                    🚩
-                  </div>
-                </div>
-              </div>
-            ))}
+          
+          <div style={THEME.tableContainer}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {races?.map((race, idx) => {
+                  const rDate = new Date(race.race_date);
+                  const isPast = rDate < today;
+                  
+                  // Formátování data na DD.MM.YYYY
+                  const dateStr = rDate.toLocaleDateString('cs-CZ', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  });
+
+                  return (
+                    <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px', width: '120px', color: '#fbbf24', fontWeight: '800' }}>
+                        {dateStr}
+                      </td>
+                      <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700' }}>
+                        {/* Pokud je závod v historii, zobrazíme odkaz */}
+                        {isPast ? (
+                          <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {race.name}
+                            <span style={{ fontSize: '0.8rem', color: '#fbbf24' }}>→</span>
+                          </Link>
+                        ) : (
+                          <span style={{ color: '#fff' }}>{race.name}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -69,12 +90,10 @@ export default async function HomePage() {
             catResults.forEach(r => {
               const name = r.drivers?.full_name;
               if (name) {
-                // Sčítání základních a extra bodů
                 driverTotals[name] = (driverTotals[name] || 0) + (r.total_points || 0) + (r.extra_point || 0);
               }
             });
 
-            // Seřazení a výběr pouze TOP 3 jezdců
             const top3 = Object.entries(driverTotals)
               .sort(([, a]: any, [, b]: any) => b - a)
               .slice(0, 3);
@@ -115,7 +134,6 @@ export default async function HomePage() {
   );
 }
 
-// Styl pro dvou sloupcové rozvržení
 const twoColumnGridStyle: any = { 
   display: 'grid', 
   gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', 

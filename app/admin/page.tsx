@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { THEME } from '@/lib/theme'; // Předpokládám existenci tvého theme souboru
+import { THEME } from '@/lib/theme';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,18 +10,62 @@ const supabase = createClient(
 );
 
 export default function MasterAdminPage() {
+  // ... (stavy zůstávají stejné)
   const [password, setPassword] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState('results');
   const [status, setStatus] = useState({ msg: '', type: '' });
-
-  // --- DATA ---
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [seasons, setSeasons] = useState<any[]>([]);
   const [allDrivers, setAllDrivers] = useState<any[]>([]);
   const [filteredRaces, setFilteredRaces] = useState<any[]>([]);
   const [filteredCategories, setFilteredCategories] = useState<any[]>([]);
   const [currentResults, setCurrentResults] = useState<any[]>([]);
+
+  // Pomocná funkce pro formátování času kvalifikace mm:ss.xxx
+  const formatInterval = (interval: string | null) => {
+    if (!interval) return '--:--.---';
+    // Interval z DB vypadá např. "00:00:37.197061"
+    const parts = interval.split(':');
+    if (parts.length < 3) return interval;
+    const minutes = parts[1];
+    const secondsWithMs = parts[2]; // "37.197061"
+    const [seconds, ms] = secondsWithMs.split('.');
+    const formattedMs = ms ? ms.substring(0, 3) : '000';
+    return `${minutes}:${seconds}.${formattedMs}`;
+  };
+
+  const loadYearData = async (year: number) => {
+    try {
+      const { data: r } = await supabase.from('races').select('*').eq('season_id', year).order('race_date', { ascending: true });
+      const { data: c } = await supabase.from('categories').select('*').eq('season_id', year).order('order_by', { ascending: true });
+      
+      // ŘAZENÍ: race_id, category_id, total_points (sestupně)
+      const { data: res, error } = await supabase
+        .from('results')
+        .select(`
+          *,
+          drivers (full_name),
+          categories (name),
+          races!inner (name, season_id)
+        `)
+        .eq('races.season_id', year)
+        .order('race_id', { ascending: false })
+        .order('category_id', { ascending: true })
+        .order('total_points', { ascending: false });
+
+      if (error) throw error;
+      setFilteredRaces(r || []);
+      setFilteredCategories(c || []);
+      setCurrentResults(res || []);
+    } catch (err: any) {
+      console.error("Chyba:", err.message);
+    }
+  };
+
+  // ... (useEffecty a handlery handleAddResult atd. zůstávají stejné)
+  useEffect(() => { if (isAuthorized) loadGlobalData(); }, [isAuthorized]);
+  useEffect(() => { if (isAuthorized && selectedYear) loadYearData(selectedYear); }, [selectedYear, isAuthorized]);
 
   const loadGlobalData = async () => {
     const { data: s } = await supabase.from('seasons').select('*').order('id', { ascending: false });
@@ -31,38 +75,16 @@ export default function MasterAdminPage() {
     if (!selectedYear && s && s.length > 0) setSelectedYear(s[0].id);
   };
 
-  const loadYearData = async (year: number) => {
-    const { data: r } = await supabase.from('races').select('*').eq('season_id', year).order('race_date', { ascending: true });
-    const { data: c } = await supabase.from('categories').select('*').eq('season_id', year).order('order_by', { ascending: true });
-    // Načtení rozšířených dat pro tabulku
-    const { data: res } = await supabase
-        .from('results')
-        .select('*, drivers(full_name), categories(name), races!inner(name, season_id)')
-        .eq('races.season_id', year)
-        .order('created_at', { ascending: false });
-    
-    setFilteredRaces(r || []);
-    setFilteredCategories(c || []);
-    setCurrentResults(res || []);
-  };
-
-  useEffect(() => { if (isAuthorized) loadGlobalData(); }, [isAuthorized]);
-  useEffect(() => { if (isAuthorized && selectedYear) loadYearData(selectedYear); }, [selectedYear, isAuthorized]);
-
   const notify = (msg: string, type = 'success') => {
     setStatus({ msg, type });
     setTimeout(() => setStatus({ msg: '', type: '' }), 4000);
   };
 
   const deleteItem = async (table: string, id: any) => {
-    if (!window.confirm('Opravdu chcete tuto položku smazat?')) return;
+    if (!window.confirm('Opravdu smazat?')) return;
     const { error } = await supabase.from(table).delete().eq('id', id);
-    if (error) notify('Chyba: ' + error.message, 'error');
-    else {
-      notify('Smazáno.');
-      if (table === 'drivers' || table === 'seasons') loadGlobalData();
-      if (selectedYear) loadYearData(selectedYear);
-    }
+    if (error) notify(error.message, 'error');
+    else { notify('Smazáno.'); if (selectedYear) loadYearData(selectedYear); }
   };
 
   const handleAddResult = async (e: any) => {
@@ -72,18 +94,16 @@ export default function MasterAdminPage() {
       race_id: parseInt(fd.get('race_id') as string),
       driver_id: parseInt(fd.get('driver_id') as string),
       category_id: fd.get('category_id'),
-      pos_race_1: parseInt(fd.get('p1') as string),
-      pos_race_2: parseInt(fd.get('p2') as string),
+      pos_race_1: parseInt(fd.get('p1') as string) || null,
+      pos_race_2: parseInt(fd.get('p2') as string) || null,
       extra_point: parseInt(fd.get('extra') as string) || 0,
-      total_points: parseInt(fd.get('total') as string),
-      qualy_time: fd.get('qualy') || null, // Ukládá se jako interval
+      total_points: parseInt(fd.get('total') as string) || 0,
+      qualy_time: fd.get('qualy') || null,
       pole_position: e.target.pole.checked
     }]);
-    if (error) notify('Chyba: ' + error.message, 'error');
-    else { notify('Výsledek uložen.'); e.target.reset(); loadYearData(selectedYear!); }
+    if (error) notify(error.message, 'error');
+    else { notify('Uloženo.'); e.target.reset(); loadYearData(selectedYear!); }
   };
-
-  // ... (handleAddRace, handleAddCategory, handleAddDriver zůstávají stejné)
 
   if (!isAuthorized) {
     return (
@@ -96,8 +116,9 @@ export default function MasterAdminPage() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '40px auto', color: '#fff', padding: '0 20px', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '1300px', margin: '40px auto', color: '#fff', padding: '0 20px', fontFamily: 'sans-serif' }}>
       
+      {/* VÝBĚR ROKU */}
       <div style={yearSelectorStyle}>
         <label style={{ fontWeight: 'bold' }}>AKTIVNÍ ROK: </label>
         <select value={selectedYear || ''} onChange={(e) => setSelectedYear(parseInt(e.target.value))} style={selectYearStyle}>
@@ -115,10 +136,10 @@ export default function MasterAdminPage() {
 
       {status.msg && <div style={{ color: status.type === 'success' ? '#10b981' : '#ef4444', textAlign: 'center', marginBottom: '20px', fontWeight: 'bold' }}>{status.msg}</div>}
 
-      {/* SEKCE VÝSLEDKY */}
       {activeTab === 'results' && (
         <>
           <form onSubmit={handleAddResult} style={formBoxStyle}>
+            {/* ... (formulář zůstává stejný) */}
             <h3 style={{ color: '#fbbf24', marginBottom: '20px' }}>Zadat výsledky ({selectedYear})</h3>
             <div style={gridStyle}>
               <div style={inputGroup}><label>Závod</label>
@@ -140,14 +161,12 @@ export default function MasterAdminPage() {
                 </select>
               </div>
             </div>
-            
             <div style={{ ...gridStyle, marginTop: '20px', gridTemplateColumns: '1fr 1fr 1fr 1fr' }}>
               <div style={inputGroup}><label>Kvalifikace</label><input name="qualy" type="text" style={inputStyle} placeholder="00:45.123" /></div>
-              <div style={inputGroup}><label>1. Jízda (poz.)</label><input name="p1" type="number" required style={inputStyle} /></div>
-              <div style={inputGroup}><label>2. Jízda (poz.)</label><input name="p2" type="number" required style={inputStyle} /></div>
+              <div style={inputGroup}><label>1. Jízda (poz.)</label><input name="p1" type="number" style={inputStyle} /></div>
+              <div style={inputGroup}><label>2. Jízda (poz.)</label><input name="p2" type="number" style={inputStyle} /></div>
               <div style={inputGroup}><label>Extra (+1b PP)</label><input name="extra" type="number" defaultValue="0" style={inputStyle} /></div>
             </div>
-
             <div style={{ ...gridStyle, marginTop: '20px' }}>
               <div style={inputGroup}><label>Celkové body do tabulky</label><input name="total" type="number" required style={{ ...inputStyle, borderColor: '#fbbf24' }} /></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '25px' }}>
@@ -158,33 +177,34 @@ export default function MasterAdminPage() {
             <button type="submit" style={submitBtnStyle}>Uložit výsledek</button>
           </form>
 
-          {/* NOVÁ ROZŠÍŘENÁ TABULKA EXISTUJÍCÍCH VÝSLEDKŮ */}
+          {/* NOVÁ TABULKA VÝSLEDKŮ */}
           <div style={THEME.tableContainer}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-                  <th style={THEME.th}>Jezdec / Závod</th>
-                  <th style={THEME.th}>Kat.</th>
-                  <th style={THEME.th}>Kvaly</th>
+                  <th style={THEME.th}>Závod ID</th>
+                  <th style={THEME.th}>Kategorie</th>
+                  <th style={THEME.th}>Závodník</th>
                   <th style={THEME.th}>PP</th>
-                  <th style={THEME.th}>J1 / J2</th>
-                  <th style={{ ...THEME.th, color: '#fbbf24' }}>Celkem</th>
-                  <th style={THEME.th}>Akce</th>
+                  <th style={THEME.th}>Čas kvaly</th>
+                  <th style={THEME.th}>Race 1</th>
+                  <th style={THEME.th}>Race 2</th>
+                  <th style={{ ...THEME.th, color: '#fbbf24', textAlign: 'right' }}>Celkem body</th>
+                  <th style={THEME.th}></th>
                 </tr>
               </thead>
               <tbody>
                 {currentResults.map(res => (
                   <tr key={res.id} style={{ borderBottom: '1px solid #222' }}>
-                    <td style={THEME.td}>
-                        <div style={{ fontWeight: 'bold' }}>{res.drivers?.full_name}</div>
-                        <div style={{ fontSize: '0.7rem', color: '#888' }}>{res.races?.name}</div>
-                    </td>
+                    <td style={THEME.td}>{res.race_id}</td>
                     <td style={THEME.td}>{res.categories?.name}</td>
-                    <td style={THEME.td}>{res.qualy_time || '--'}</td>
+                    <td style={{ ...THEME.td, fontWeight: 'bold' }}>{res.drivers?.full_name}</td>
                     <td style={THEME.td}>{res.pole_position ? '✅' : '-'}</td>
-                    <td style={THEME.td}>{res.pos_race_1}. / {res.pos_race_2}.</td>
-                    <td style={{ ...THEME.td, fontWeight: 'bold', color: '#fbbf24' }}>
-                        {(res.total_points || 0) + (res.extra_point || 0)} b.
+                    <td style={THEME.td}>{formatInterval(res.qualy_time)}</td>
+                    <td style={THEME.td}>{res.pos_race_1 || '-'}</td>
+                    <td style={THEME.td}>{res.pos_race_2 || '-'}</td>
+                    <td style={{ ...THEME.td, fontWeight: 'bold', color: '#fbbf24', textAlign: 'right' }}>
+                        {(res.total_points || 0) + (res.extra_point || 0)}
                     </td>
                     <td style={THEME.td}>
                         <button onClick={() => deleteItem('results', res.id)} style={delBtnStyle}>Smazat</button>
@@ -197,12 +217,12 @@ export default function MasterAdminPage() {
         </>
       )}
 
-      {/* ... (Zbytek sekcí Races, Categories, Drivers zůstává stejný) */}
+      {/* OSTATNÍ SEKCE (Závody, Kategorie, Jezdci) ... */}
     </div>
   );
 }
 
-// STYLY (stejné jako v tvém zadání, doplněno o THEME)
+// STYLY KONSTANTY ...
 const loginBoxStyle: any = { maxWidth: '400px', margin: '100px auto', padding: '40px', background: '#111', borderRadius: '15px', border: '1px solid #333', textAlign: 'center' };
 const yearSelectorStyle: any = { background: '#111', padding: '20px', borderRadius: '10px', marginBottom: '25px', border: '1px solid #333', textAlign: 'center' };
 const selectYearStyle: any = { padding: '8px 15px', background: '#222', color: '#fbbf24', border: '2px solid #fbbf24', borderRadius: '5px', fontWeight: 'bold' };
@@ -212,5 +232,5 @@ const formBoxStyle: any = { background: '#111', padding: '30px', borderRadius: '
 const inputGroup: any = { display: 'flex', flexDirection: 'column', gap: '5px' };
 const inputStyle: any = { padding: '12px', background: '#1a1a1a', border: '1px solid #333', color: '#fff', borderRadius: '8px', outline: 'none', width: '100%' };
 const submitBtnStyle: any = { padding: '15px', background: '#fbbf24', color: '#000', border: 'none', borderRadius: '8px', cursor: 'pointer', width: '100%', fontWeight: 'bold', marginTop: '20px' };
-const gridStyle: any = { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px' };
+const gridStyle: any = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' };
 const delBtnStyle: any = { background: '#991b1b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.7rem' };

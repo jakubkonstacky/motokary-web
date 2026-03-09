@@ -109,8 +109,8 @@ export default function MasterAdminPage() {
     return (
       <div style={loginBoxStyle}>
         <h2 style={{ color: '#fbbf24' }}>🔐 Admin Vstup</h2>
-        <input type="password" placeholder="Heslo" style={inputStyle} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && password === 'admin123' && setIsAuthorized(true)} />
-        <button onClick={() => password === 'admin123' ? setIsAuthorized(true) : alert('Špatné heslo!')} style={submitBtnStyle}>Vstoupit</button>
+        <input type="password" placeholder="Heslo" style={inputStyle} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && password === 'admin1234' && setIsAuthorized(true)} />
+        <button onClick={() => password === 'admin1234' ? setIsAuthorized(true) : alert('Špatné heslo!')} style={submitBtnStyle}>Vstoupit</button>
       </div>
     );
   }

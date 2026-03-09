@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { THEME } from '@/lib/theme'; // Import centrálních stylů
+import { THEME } from '@/lib/theme';
 
 export const revalidate = 0;
 
@@ -20,27 +20,20 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
 
   return (
     <div style={THEME.container}>
-      
       <h1 style={THEME.mainTitle}>Výsledky šampionátu</h1>
-
-      {/* Navigace s tlačítky jako v galerii */}
       <div style={THEME.seasonNav}>
         {years.map(year => (
           <Link key={year} href={`/vysledky?year=${year}`} style={{
             ...THEME.seasonLinkBase,
             background: selectedYear === year ? '#fbbf24' : 'rgba(255,255,255,0.08)',
-            color: selectedYear === year ? '#000' : '#fff', // Bílý text pro neaktivní rok
-          }}>
-            {year}
-          </Link>
+            color: selectedYear === year ? '#000' : '#fff',
+          }}>{year}</Link>
         ))}
       </div>
 
       {categories?.map((cat) => {
-        const catResults = resultsData?.filter(r => r.category_id === cat.id) || [];
         const driverStats: any = {};
-
-        catResults.forEach(r => {
+        resultsData?.filter(r => r.category_id === cat.id).forEach(r => {
           const name = r.drivers?.full_name;
           if (!name) return;
           if (!driverStats[name]) driverStats[name] = { name, raceData: {}, total: 0 };
@@ -48,6 +41,7 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
           const pBase = r.total_points || 0;
           const pExtra = r.extra_point || 0;
           
+          // ZOBRAZENÍ: displayPoints je základní hodnota (např. 25)
           driverStats[name].raceData[r.race_id] = { display: pBase, extra: pExtra > 0, p1: r.pos_race_1, p2: r.pos_race_2 };
           driverStats[name].total += (pBase + pExtra);
         });
@@ -78,22 +72,17 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
                         return (
                           <td key={r.id} style={{ ...THEME.td, textAlign: 'center' }}>
                             {info ? (
-                              <div style={{ position: 'relative', display: 'inline-block' }}>
+                              <div>
                                 <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>
-                                  {info.display}
-                                  {info.extra && <span style={THEME.extraPoint}>+1</span>}
+                                  {info.display} {info.extra && <span style={THEME.extraPoint}>+1</span>}
                                 </div>
-                                {r.show_race_position && (
-                                  <div style={THEME.positionSub}>{info.p1}. / {info.p2}. jízda</div>
-                                )}
+                                {r.show_race_position && <div style={{ fontSize: '0.7rem', color: '#888' }}>{info.p1}. / {info.p2}. jízda</div>}
                               </div>
                             ) : <span style={{ opacity: 0.1 }}>0</span>}
                           </td>
                         );
                       })}
-                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>
-                        {d.total}
-                      </td>
+                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>{d.total}</td>
                     </tr>
                   ))}
                 </tbody>

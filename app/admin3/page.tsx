@@ -46,27 +46,42 @@ export default function MasterAdminPage() {
   };
 
   // 2. Data pro konkrétní rok
-  const loadYearData = async (year: number) => {
-    try {
-      const { data: r } = await supabase.from('races').select('*').eq('season_id', year).order('race_date', { ascending: true });
-      const { data: c } = await supabase.from('categories').select('*').eq('season_id', year).order('order_by', { ascending: true });
-      
-      // Opravený dotaz na výsledky - odolnější proti chybám v relacích
-      const { data: res } = await supabase
-        .from('results')
-        .select('*, drivers(full_name), categories(name), races(name, season_id)')
-        .order('created_at', { ascending: false });
+const loadYearData = async (year: number) => {
+  try {
+    // 1. Načtení závodů a kategorií pro daný rok
+    const { data: r } = await supabase.from('races').select('*').eq('season_id', year).order('race_date', { ascending: true });
+    const { data: c } = await supabase.from('categories').select('*').eq('season_id', year).order('order_by', { ascending: true });
+    
+    setFilteredRaces(r || []);
+    setFilteredCategories(c || []);
 
-      // Filtrujeme výsledky až v aplikaci pro vyšší stabilitu
-      const yearResults = res?.filter(item => item.races?.season_id === year) || [];
+    // 2. Načtení výsledků - POZOR na název relace u 'races'
+    // Použijeme explicitní !inner, aby se vrátily jen výsledky pro daný rok
+    const { data: res, error } = await supabase
+      .from('results')
+      .select(`
+        *,
+        drivers (full_name),
+        categories (name),
+        races!inner (name, season_id)
+      `)
+      .eq('races.season_id', year) // Filtrujeme přímo v SQL dotazu
+      .order('id', { ascending: false });
 
-      setFilteredRaces(r || []);
-      setFilteredCategories(c || []);
-      setCurrentResults(yearResults);
-    } catch (err) {
-      console.error("Chyba při načítání dat roku:", err);
+    if (error) {
+      console.error("Chyba Supabase (results):", error.message);
+      notify("Chyba při načítání výsledků: " + error.message, "error");
+    } else {
+      console.log("Načtené výsledky pro rok", year, ":", res); // Pro kontrolu v F12
+      setCurrentResults(res || []);
     }
-  };
+  } catch (err) {
+    console.error("Kritická chyba při načítání dat:", err);
+  }
+};
+  
+  
+ 
 
   useEffect(() => { if (isAuthorized) loadGlobalData(); }, [isAuthorized]);
   useEffect(() => { if (isAuthorized && selectedYear) loadYearData(selectedYear); }, [selectedYear, isAuthorized]);

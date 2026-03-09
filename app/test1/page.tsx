@@ -70,28 +70,27 @@ export default async function HomePage() {
                         </span>
                       </td>
 
-                    {/* Název a popis */}
+                    {/* Název  */}
                       <td style={{ ...THEME.td, padding: '20px' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: '800', fontSize: '1.2rem', whiteSpace: 'nowrap' }}>
                             <span style={{ color: '#fff' }}>{race.name}</span>                            
                           </div>
                       </td>
 
 
-                   {/* Název a popis */}
+                   {/* Popis nebo link na vysledky */}
                       <td style={{ ...THEME.td, padding: '20px' }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
-                            <span style={{ color: '#fff' }}>{race.name}</span>
+                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>                            
                             {isPast ? (
                               <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                 {race.name} <span style={{ color: '#fbbf24' }}>→ Zobraz výsledky</span>
                               </Link>
                             ) : (
-                              <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '400', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               | {race.desc}
-                                </div>
+                              </div>
                             )}
                           </div>                          
                       </td>

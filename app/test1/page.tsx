@@ -62,18 +62,18 @@ export default async function HomePage() {
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
                       {/* Datum a čas v jednom bloku s nowrap */}
                       <td style={{ ...THEME.td, padding: '20px', width: '220px', whiteSpace: 'nowrap' }}>
-                        <span style={{ color: '#fbbf24', fontWeight: '800', fontSize: '1.05rem', marginRight: '10px' }}>
+                        <span style={{ color: '#fbbf24', fontWeight: '600', fontSize: '1.05rem', marginRight: '50px' }}>
                            {dateStr} - {dayName}
                         </span>
-                        <span style={{ fontSize: '0.85rem', color: '#888', fontWeight: '600' }}>
+                        <span style={{ fontSize: '0.85rem', color: '#888', fontWeight: '500' }}>
                           🕗 {timeStr}
                         </span>
                       </td>
 
                       {/* Název a popis */}
                       <td style={{ ...THEME.td, padding: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'nowrap' }}>
+                          <div style={{ fontWeight: '600', fontSize: '1.0rem', whiteSpace: 'nowrap' }}>
                             {isPast ? (
                               <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                 {race.name} <span style={{ color: '#fbbf24' }}>→</span>
@@ -139,10 +139,10 @@ export default async function HomePage() {
   );
 }
 
-// DEFINICE POMĚRU 70/30
+// DEFINICE POMĚRU 60/40
 const twoColumnGridStyle: any = { 
   display: 'grid', 
-  gridTemplateColumns: '7fr 3fr', 
-  gap: '40px',
+  gridTemplateColumns: '6fr 4fr', 
+  gap: '20px',
   alignItems: 'start'
 };

@@ -30,15 +30,15 @@ export const THEME = {
     overflowX: 'auto'
   },
   th: {
-    padding: '15px',
+    padding: '10px',
     fontSize: '0.75rem',
     fontWeight: '900',
     textTransform: 'uppercase',
     color: '#666'
   },
   td: {
-    padding: '10px',
-    fontSize: '1rem'
+    padding: '7px',
+    fontSize: '0.90rem'
   },
   seasonNav: {
     display: 'flex',

@@ -41,7 +41,7 @@ export default async function HomePage() {
                       <td style={{ ...THEME.td, padding: '15px 20px', width: '240px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
                         {race.name}
                       </td>                      
-                      <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px',width: 'š40px', textAlign: 'left' fontWeight: '700' }}>
                         isPast ? (
                           <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}> → Zobraz výsledky </Link>
                         ) 

@@ -72,21 +72,18 @@ export default async function HomePage() {
 
                       {/* Název a popis */}
                       <td style={{ ...THEME.td, padding: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'nowrap' }}>
-                          <div style={{ fontWeight: '600', fontSize: '1.0rem', whiteSpace: 'nowrap' }}>
-                            {isPast ? (
-                              <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
-                                {race.name} <span style={{ color: '#fbbf24' }}>→</span>
-                              </Link>
-                            ) : (
-                              <span style={{ color: '#fff' }}>{race.name}</span>
-                            )}
-                          </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'nowrap' }}>                          
                           
                           {/* Popis závodu na stejném řádku, pokud se vejde */}
                           {race.desc && (
                             <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '400', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              | {race.desc}
+                              {isPast ? (
+                              <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
+                                {race.name} <span style={{ color: '#fbbf24' }}>→ Zobraz výsledky</span>
+                              </Link>
+                              ) : (
+                              <span style={{ color: '#fff' }}>{race.name}</span>
+                            )}                              
                             </div>
                           )}
                         </div>

@@ -61,8 +61,8 @@ export default async function HomePage() {
                   return (
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
                       {/* Datum a čas v jednom bloku s nowrap */}
-                      <td style={{ ...THEME.td, padding: '20px', width: '220px', whiteSpace: 'nowrap' }}>
-                        <span style={{ color: '#fbbf24', fontWeight: '600', fontSize: '1.05rem', marginRight: '50px' }}>
+                      <td style={{ ...THEME.td, padding: '10px', width: '200px', whiteSpace: 'nowrap' }}>
+                        <span style={{ color: '#fbbf24', fontWeight: '600', fontSize: '1.05rem', marginRight: '30px' }}>
                            {dateStr} - {dayName}
                         </span>
                         <span style={{ fontSize: '0.85rem', color: '#888', fontWeight: '500' }}>

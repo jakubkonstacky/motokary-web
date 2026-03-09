@@ -70,23 +70,30 @@ export default async function HomePage() {
                         </span>
                       </td>
 
-                      {/* Název a popis */}
+                    {/* Název a popis */}
                       <td style={{ ...THEME.td, padding: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'nowrap' }}>                          
-                          
-                          {/* Popis závodu na stejném řádku, pokud se vejde */}
-                          {race.desc && (
-                            <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '400', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {isPast ? (
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
+                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                            <span style={{ color: '#fff' }}>{race.name}</span>                            
+                          </div>
+                      </td>
+
+
+                   {/* Název a popis */}
+                      <td style={{ ...THEME.td, padding: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', flexWrap: 'nowrap' }}>
+                          <div style={{ fontWeight: '700', fontSize: '1.1rem', whiteSpace: 'nowrap' }}>
+                            <span style={{ color: '#fff' }}>{race.name}</span>
+                            {isPast ? (
                               <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                 {race.name} <span style={{ color: '#fbbf24' }}>→ Zobraz výsledky</span>
                               </Link>
-                              ) : (
-                              <span style={{ color: '#fff' }}>{race.name}</span>
-                            )}                              
-                            </div>
-                          )}
-                        </div>
+                            ) : (
+                              <div style={{ fontSize: '0.85rem', color: '#aaa', fontWeight: '400', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              | {race.desc}
+                                </div>
+                            )}
+                          </div>                          
                       </td>
                     </tr>
                   );

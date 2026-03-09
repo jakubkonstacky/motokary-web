@@ -37,13 +37,10 @@ export default async function HomePage() {
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ ...THEME.td, padding: '15px 20px', width: '240px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
                         {dateStr}
-                      </td>
-                      <td style={{ ...THEME.td, padding: '15px 20px', width: '240px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
-                        {race.name}
-                      </td>                      
+                      </td>                            
                       <td style={{ ...THEME.td, padding: '15px 20px',width: '340px', textAlign: 'left' fontWeight: '700' }}>
                       {isPast ? (
-                          <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}> → Zobraz výsledky</Link>
+                          <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fff', textDecoration: 'none' }}> {race.name} → Zobraz výsledky</Link>
                         ) : race.name}
                       </td>
                     </tr>

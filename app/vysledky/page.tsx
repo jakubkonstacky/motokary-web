@@ -73,16 +73,16 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
                           <td key={r.id} style={{ ...THEME.td, textAlign: 'center' }}>
                             {info ? (
                               <div>
-                                <div style={{ fontWeight: '800', fontSize: '1.1rem' }}>
+                                <div style={{ fontWeight: '600', fontSize: '1.2rem' }}>
                                   {info.display} {info.extra && <span style={THEME.extraPoint}>+1</span>}
                                 </div>
-                                {r.show_race_position && <div style={{ fontSize: '0.7rem', color: '#888' }}>{info.p1}. / {info.p2}. jízda</div>}
+                                {r.show_race_position && <div style={{ fontSize: '0.75rem', color: '#888' }}>{info.p1}/{info.p2}</div>}
                               </div>
                             ) : <span style={{ opacity: 0.1 }}>0</span>}
                           </td>
                         );
                       })}
-                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>{d.total}</td>
+                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '800', color: '#fbbf24', fontSize: '1.2rem' }}>{d.total}</td>
                     </tr>
                   ))}
                 </tbody>

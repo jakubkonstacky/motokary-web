@@ -56,7 +56,7 @@ export default async function HomePage() {
   
                   return (
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ ...THEME.td, padding: '15px 20px', width: '140px', color: '#fbbf24', fontWeight: '800',  whiteSpace: 'nowrap' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px', width: '140px', color: '#fbbf24', fontWeight: '800'}}>
                         {dateStr}
                       </td>
                       <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700' }}>

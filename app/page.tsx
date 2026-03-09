@@ -35,7 +35,7 @@ export default async function HomePage() {
                   const dateStr = rDate.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
                   return (
                     <tr key={race.id} style={{ borderBottom: idx === (races.length - 1) ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ ...THEME.td, padding: '15px 20px', width: '140px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
+                      <td style={{ ...THEME.td, padding: '15px 20px', width: '180px', color: '#fbbf24', fontWeight: '800', whiteSpace: 'nowrap' }}>
                         {dateStr}
                       </td>
                       <td style={{ ...THEME.td, padding: '15px 20px', fontWeight: '700' }}>

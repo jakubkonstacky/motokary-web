@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
@@ -12,10 +12,8 @@ const supabase = createClient(
 export default function Navbar() {
   const [seasons, setSeasons] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Zjištění aktuálního roku pro porovnání
-  const currentSystemYear = new Date().getFullYear();
+  const currentSystemYear = new Date().getFullYear(); // 2026
 
   useEffect(() => {
     async function loadSeasons() {
@@ -23,14 +21,6 @@ export default function Navbar() {
       setSeasons(data || []);
     }
     loadSeasons();
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
@@ -45,23 +35,26 @@ export default function Navbar() {
         {/* MENU */}
         <div style={menuItemsStyle}>
           
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                setIsOpen(!isOpen);
-              }} 
+          {/* KALENDÁŘ - HOVER KONTEJNER */}
+          <div 
+            style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+          >
+            {/* Přímý odkaz na aktuální rok bez šipky */}
+            <Link 
+              href={`/?year=${currentSystemYear}`} 
               style={{
-                ...navLinkButtonStyle,
+                ...navLinkStyle,
                 color: isOpen ? '#fbbf24' : '#fff',
-                border: isOpen ? '1px solid rgba(251, 191, 36, 0.5)' : '1px solid transparent'
+                padding: '25px 0' // Zvětšená plocha pro snadnější najetí
               }}
             >
-              KALENDÁŘ ZÁVODŮ {isOpen ? '▲' : '▼'}
-            </button>
+              KALENDÁŘ ZÁVODŮ
+            </Link>
 
-            {/* VYČIŠTĚNÝ DROPDOWN */}
-            {isOpen && (
+            {/* DROPDOWN MENU PŘI HOVERU */}
+            {isOpen && seasons.length > 0 && (
               <div style={dropdownContainerStyle}>
                 <div style={dropdownArrowStyle} />
                 
@@ -78,12 +71,6 @@ export default function Navbar() {
                     </Link>
                   );
                 })}
-
-                {seasons.length === 0 && (
-                  <div style={{ padding: '15px', color: '#666', fontSize: '0.8rem' }}>
-                    Žádné sezóny nenalezeny
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -120,62 +107,72 @@ const navContainerStyle: any = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: '0 20px'
+  padding: '0 20px',
+  height: '100%'
 };
 
-const logoStyle: any = { fontSize: '1.5rem', fontWeight: '900', textDecoration: 'none', color: '#fff' };
-const menuItemsStyle: any = { display: 'flex', gap: '25px', alignItems: 'center' };
-const navLinkStyle: any = { color: '#fff', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase' };
-const navLinkButtonStyle: any = { 
-    ...navLinkStyle, 
-    background: 'none', 
-    cursor: 'pointer', 
-    padding: '8px 15px', 
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s'
+const logoStyle: any = { 
+  fontSize: '1.5rem', 
+  fontWeight: '900', 
+  textDecoration: 'none', 
+  color: '#fff',
+  transition: 'transform 0.2s'
+};
+
+const menuItemsStyle: any = { 
+  display: 'flex', 
+  gap: '35px', 
+  alignItems: 'center',
+  height: '100%'
+};
+
+const navLinkStyle: any = { 
+  color: '#fff', 
+  textDecoration: 'none', 
+  fontSize: '0.85rem', 
+  fontWeight: '700', 
+  textTransform: 'uppercase',
+  transition: 'all 0.2s ease'
 };
 
 const dropdownContainerStyle: any = {
   position: 'absolute',
-  top: '55px',
-  right: '0',
+  top: '70px', // Přesně na hranu lišty
+  left: '50%',
+  transform: 'translateX(-50%)',
   background: '#111',
   border: '1px solid #333',
-  borderRadius: '12px',
+  borderRadius: '0 0 12px 12px',
   minWidth: '220px',
-  padding: '8px 0',
+  padding: '10px 0',
   boxShadow: '0 20px 50px rgba(0,0,0,0.9)',
-  zIndex: 10002
+  zIndex: 10002,
+  animation: 'fadeIn 0.2s ease-out'
 };
 
 const dropdownArrowStyle: any = {
   position: 'absolute',
   top: '-6px',
-  right: '25px',
+  left: '50%',
   width: '12px',
   height: '12px',
   background: '#111',
   borderTop: '1px solid #333',
   borderLeft: '1px solid #333',
-  transform: 'rotate(45deg)'
+  transform: 'translateX(-50%) rotate(45deg)'
 };
 
 const dropdownLinkStyle: any = {
   display: 'block',
-  padding: '12px 20px',
+  padding: '12px 25px',
   color: '#fff',
   textDecoration: 'none',
   fontSize: '0.9rem',
   fontWeight: '600',
-  borderBottom: '1px solid #222',
-  transition: 'background 0.2s'
+  transition: 'background 0.2s',
+  borderBottom: '1px solid rgba(255,255,255,0.03)'
 };
 
-// Styl pro popisek "Aktuální"
 const currentBadgeStyle: any = {
   color: '#fbbf24',
   fontSize: '0.75rem',

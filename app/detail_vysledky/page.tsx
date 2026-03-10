@@ -44,14 +44,14 @@ export default async function DetailVysledkyPage(props: {
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
   const { data: results } = await supabase.from('results').select('*, drivers(full_name)').eq('race_id', raceId).order('total_points', { ascending: false });
 
-  // VLASTNÍ FORMÁT DATUMU: 26. 04. 2026 - NE
+  // Formátování data: 26. 04. 2026 - NE
   const d = new Date(race.race_date);
   const day = d.getDate().toString().padStart(2, '0');
   const month = (d.getMonth() + 1).toString().padStart(2, '0');
   const year = d.getFullYear();
   const czechDays = ['NE', 'PO', 'ÚT', 'ST', 'ČT', 'PÁ', 'SO'];
   const dayName = czechDays[d.getDay()];
-  const formattedDate = `${day}.${month}.${year} - ${dayName}`;
+  const formattedDate = `${day}. ${month}. ${year} - ${dayName}`;
 
   return (
     <div style={THEME.container}>
@@ -101,9 +101,10 @@ export default async function DetailVysledkyPage(props: {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
-                    <th style={{ ...THEME.th, width: '60px' }}>#</th>
+                    <th style={{ ...THEME.th, width: '50px' }}>#</th>
                     <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
-                    <th style={THEME.th}>Kvalifikace</th>
+                    <th style={THEME.th}>Kval. čas</th>
+                    <th style={THEME.th}>Kval. poz.</th>
                     <th style={THEME.th}>PP</th>
                     <th style={THEME.th}>1. jízda</th>
                     <th style={THEME.th}>2. jízda</th>
@@ -116,6 +117,9 @@ export default async function DetailVysledkyPage(props: {
                       <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#555' }}>{idx + 1}.</td>
                       <td style={{ ...THEME.td, fontWeight: '700' }}>{res.drivers?.full_name}</td>
                       <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa' }}>{formatInterval(res.qualy_time)}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '600' }}>
+                        {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
+                      </td>
                       <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pole_position ? '🥇' : '-'}</td>
                       <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
                       <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
@@ -133,6 +137,8 @@ export default async function DetailVysledkyPage(props: {
     </div>
   );
 }
+
+// --- STYLY ---
 
 const titleRowStyle: any = {
   display: 'flex',

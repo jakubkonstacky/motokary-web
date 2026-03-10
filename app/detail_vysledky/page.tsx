@@ -44,18 +44,19 @@ export default async function DetailVysledkyPage(props: {
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
   const { data: results } = await supabase.from('results').select('*, drivers(full_name)').eq('race_id', raceId).order('total_points', { ascending: false });
 
-  // Formátování data: "Pondělí 12. května 2026"
-  const formattedDate = new Date(race.race_date).toLocaleDateString('cs-CZ', { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
-  });
+  // VLASTNÍ FORMÁT DATUMU: 26. 04. 2026 - NE
+  const d = new Date(race.race_date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  const czechDays = ['NE', 'PO', 'ÚT', 'ST', 'ČT', 'PÁ', 'SO'];
+  const dayName = czechDays[d.getDay()];
+  const formattedDate = `${day}.${month}.${year} - ${dayName}`;
 
   return (
     <div style={THEME.container}>
       
-      {/* HEADER SEKCE - NÁZEV A DATUM NA JEDNOM ŘÁDKU */}
+      {/* HEADER SEKCE */}
       <div style={{ textAlign: 'center', marginBottom: '50px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '3.5rem', margin: 0 }}>
@@ -86,7 +87,7 @@ export default async function DetailVysledkyPage(props: {
         )}
       </div>
 
-      {/* VÝPISY VÝSLEDKŮ */}
+      {/* VÝPISY VÝSLEDKŮ PO KATEGORIÍCH */}
       {categories?.map((cat) => {
         const catResults = results?.filter(r => r.category_id === cat.id) || [];
         if (catResults.length === 0) return null;
@@ -133,15 +134,13 @@ export default async function DetailVysledkyPage(props: {
   );
 }
 
-// --- STYLY ---
-
 const titleRowStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'baseline',
   gap: '20px',
   marginBottom: '15px',
-  flexWrap: 'wrap' // Aby se na mobilu naskládali pod sebe
+  flexWrap: 'wrap'
 };
 
 const navRowStyle: any = {

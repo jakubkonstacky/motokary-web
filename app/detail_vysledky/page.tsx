@@ -86,3 +86,91 @@ export default async function DetailVysledkyPage(props: {
           </div>
         )}
       </div>
+
+      {/* VÝPISY VÝSLEDKŮ PO KATEGORIÍCH */}
+      {categories?.map((cat) => {
+        const catResults = results?.filter(r => r.category_id === cat.id) || [];
+        if (catResults.length === 0) return null;
+
+        return (
+          <div key={cat.id} style={{ marginBottom: '60px' }}>
+            <h2 style={{ ...THEME.categoryTitle, borderLeft: '4px solid #fbbf24', paddingLeft: '15px' }}>
+              🏆 {cat.name}
+            </h2>
+            <div style={THEME.tableContainer}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
+                    <th style={{ ...THEME.th, width: '60px' }}>#</th>
+                    <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
+                    <th style={THEME.th}>Kval. čas</th>
+                    <th style={THEME.th}>Kval. poz.</th>
+                    <th style={THEME.th}>1. jízda</th>
+                    <th style={THEME.th}>2. jízda</th>
+                    <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {catResults.map((res, idx) => (
+                    <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#555' }}>{idx + 1}.</td>
+                      <td style={{ ...THEME.td, fontWeight: '700' }}>{res.drivers?.full_name}</td>
+                      
+                      <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa' }}>
+                        {formatInterval(res.qualy_time)}
+                        {res.pole_position && (
+                          <span style={{ marginLeft: '8px' }} title="Vítěz kvalifikace (Pole Position)">🥇</span>
+                        )}
+                      </td>
+
+                      <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '600' }}>
+                        {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
+                      </td>
+                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>
+                        {(res.total_points || 0) + (res.extra_point || 0)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// --- STYLY ---
+
+const titleRowStyle: any = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'baseline',
+  gap: '20px',
+  marginBottom: '5px',
+  flexWrap: 'wrap'
+};
+
+const navRowStyle: any = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '30px'
+};
+
+const navColStyle: any = {
+  minWidth: '150px',
+  display: 'flex',
+  justifyContent: 'center'
+};
+
+const navLinkStyle: any = {
+  color: '#fbbf24',
+  textDecoration: 'none',
+  fontSize: '0.95rem',
+  fontWeight: '600',
+  whiteSpace: 'nowrap'
+};

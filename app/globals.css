@@ -1,9 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-
-body {
+/* ZÁKLADNÍ RESET */
+* {
+  box-sizing: border-box;
+  padding: 0;
   margin: 0;
-  background: #050505;
-  color: white;
-  font-family: 'Inter', sans-serif;
 }
-* { box-sizing: border-box; }
+
+html,
+body {
+  max-width: 100vw;
+  /* Zajišťuje, že se menu může volně rozbalit */
+  overflow-x: hidden;
+  overflow-y: visible; 
+  background-color: #000;
+  color: #fff;
+  /* Moderní font ladící s ENZOCUP logem */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* STYL PRO ODKAZY */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* EFEKT PRO TLAČÍTKA A ODKAZY PŘI NAJETÍ */
+a:hover, 
+button:hover {
+  opacity: 0.8;
+}
+
+/* POMOCNÉ TŘÍDY PRO SKLENĚNÝ EFEKT (GLASSMORPHISM) */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ÚPRAVA POSUVNÍKU (SCROLLBAR) PRO TMAVÝ REŽIM */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #fbbf24; /* Žlutá barva ENZOCUP při posouvání */
+}
+
+/* OPRAVA PRO NEXT.JS OBRÁZKY */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ZAJIŠTĚNÍ, ŽE HLAVNÍ OBSAH NEZMIZÍ POD FIXNÍ LIŠTOU */
+main {
+  display: block;
+  width: 100%;
+}

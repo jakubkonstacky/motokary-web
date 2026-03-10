@@ -44,7 +44,6 @@ export default async function DetailVysledkyPage(props: {
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
   const { data: results } = await supabase.from('results').select('*, drivers(full_name)').eq('race_id', raceId).order('total_points', { ascending: false });
 
-  // Formátování data: 26. 04. 2026 - NE
   const d = new Date(race.race_date);
   const day = d.getDate().toString().padStart(2, '0');
   const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -56,8 +55,8 @@ export default async function DetailVysledkyPage(props: {
   return (
     <div style={THEME.container}>
       
-      {/* 1. NAVIGAČNÍ ODKAZY ÚPLNĚ NAHOŘE */}
-      <div style={{ ...navRowStyle, marginBottom: '30px' }}>
+      {/* 1. NAVIGAČNÍ ODKAZY - Kompaktnější verze */}
+      <div style={navRowStyle}>
         <div style={navColStyle}>
           {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
         </div>
@@ -69,19 +68,19 @@ export default async function DetailVysledkyPage(props: {
         </div>
       </div>
 
-      {/* 2. NÁZEV (ZMENŠENÝ) A DATUM POD ODKAZY */}
-      <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+      {/* 2. NÁZEV A DATUM - Snížený rozestup a menší font */}
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <div style={titleRowStyle}>
-          <h1 style={{ ...THEME.mainTitle, fontSize: '2.2rem', margin: 0 }}>
+          <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
             {race.name}
           </h1>
-          <div style={{ color: '#888', fontSize: '1.1rem', fontWeight: '500' }}>
+          <div style={{ color: '#888', fontSize: '1rem', fontWeight: '500', opacity: 0.7 }}>
             {formattedDate}
           </div>
         </div>
 
         {race.desc && (
-          <div style={{ color: '#555', marginTop: '10px', fontStyle: 'italic', fontSize: '0.9rem' }}>
+          <div style={{ color: '#555', marginTop: '8px', fontStyle: 'italic', fontSize: '0.85rem' }}>
             {race.desc}
           </div>
         )}
@@ -93,15 +92,15 @@ export default async function DetailVysledkyPage(props: {
         if (catResults.length === 0) return null;
 
         return (
-          <div key={cat.id} style={{ marginBottom: '60px' }}>
-            <h2 style={{ ...THEME.categoryTitle, borderLeft: '4px solid #fbbf24', paddingLeft: '15px', fontSize: '1.4rem' }}>
+          <div key={cat.id} style={{ marginBottom: '50px' }}>
+            <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
               🏆 {cat.name}
             </h2>
             <div style={THEME.tableContainer}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
-                    <th style={{ ...THEME.th, width: '60px' }}>#</th>
+                    <th style={{ ...THEME.th, width: '50px' }}>#</th>
                     <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
                     <th style={THEME.th}>Kval. čas</th>
                     <th style={THEME.th}>Kval. poz.</th>
@@ -113,21 +112,21 @@ export default async function DetailVysledkyPage(props: {
                 <tbody>
                   {catResults.map((res, idx) => (
                     <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#555' }}>{idx + 1}.</td>
-                      <td style={{ ...THEME.td, fontWeight: '700' }}>{res.drivers?.full_name}</td>
+                      <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                      <td style={{ ...THEME.td, fontWeight: '700', fontSize: '0.95rem' }}>{res.drivers?.full_name}</td>
                       
-                      <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa' }}>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
                         {formatInterval(res.qualy_time)}
                         {res.pole_position && (
-                          <span style={{ marginLeft: '8px' }} title="Vítěz kvalifikace (Pole Position)">🥇</span>
+                          <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>
                         )}
                       </td>
 
-                      <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '600' }}>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
                         {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
                       </td>
-                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
-                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
                       <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                         {(res.total_points || 0) + (res.extra_point || 0)}
                       </td>
@@ -149,7 +148,7 @@ const titleRowStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'baseline',
-  gap: '15px',
+  gap: '12px',
   marginBottom: '5px',
   flexWrap: 'wrap'
 };
@@ -158,13 +157,14 @@ const navRowStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  gap: '30px',
+  gap: '25px',
   borderBottom: '1px solid rgba(255,255,255,0.05)',
-  paddingBottom: '20px'
+  paddingBottom: '12px',
+  marginBottom: '15px' // Snížený rozestup mezi navigací a názvem
 };
 
 const navColStyle: any = {
-  minWidth: '150px',
+  minWidth: '130px',
   display: 'flex',
   justifyContent: 'center'
 };
@@ -172,9 +172,9 @@ const navColStyle: any = {
 const navLinkStyle: any = {
   color: '#fbbf24',
   textDecoration: 'none',
-  fontSize: '0.9rem',
+  fontSize: '0.85rem',
   fontWeight: '600',
   whiteSpace: 'nowrap',
-  opacity: 0.8,
+  opacity: 0.7,
   transition: 'opacity 0.2s'
 };

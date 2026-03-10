@@ -44,6 +44,7 @@ export default async function DetailVysledkyPage(props: {
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
   const { data: results } = await supabase.from('results').select('*, drivers(full_name)').eq('race_id', raceId).order('total_points', { ascending: false });
 
+  // Formátování data: 26. 04. 2026 - NE
   const d = new Date(race.race_date);
   const day = d.getDate().toString().padStart(2, '0');
   const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -55,7 +56,20 @@ export default async function DetailVysledkyPage(props: {
   return (
     <div style={THEME.container}>
       
-      {/* HEADER SEKCE */}
+      {/* 1. NAVIGAČNÍ ODKAZY NAHOŘE */}
+      <div style={{ ...navRowStyle, marginBottom: '20px' }}>
+        <div style={navColStyle}>
+          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
+        </div>
+        <div style={navColStyle}>
+          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
+        </div>
+        <div style={navColStyle}>
+          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
+        </div>
+      </div>
+
+      {/* 2. HLAVNÍ NÁZEV A DATUM POD ODKAZY */}
       <div style={{ textAlign: 'center', marginBottom: '50px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '3.5rem', margin: 0 }}>
@@ -66,78 +80,9 @@ export default async function DetailVysledkyPage(props: {
           </div>
         </div>
 
-        {/* NAVIGAČNÍ ODKAZY */}
-        <div style={navRowStyle}>
-          <div style={navColStyle}>
-            {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
+        {race.desc && (
+          <div style={{ color: '#555', marginTop: '10px', fontStyle: 'italic' }}>
+            {race.desc}
           </div>
-          <div style={navColStyle}>
-            <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
-          </div>
-          <div style={navColStyle}>
-            {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* VÝPISY VÝSLEDKŮ PO KATEGORIÍCH */}
-      {categories?.map((cat) => {
-        const catResults = results?.filter(r => r.category_id === cat.id) || [];
-        if (catResults.length === 0) return null;
-
-        return (
-          <div key={cat.id} style={{ marginBottom: '60px' }}>
-            <h2 style={{ ...THEME.categoryTitle, borderLeft: '4px solid #fbbf24', paddingLeft: '15px' }}>
-              🏆 {cat.name}
-            </h2>
-            <div style={THEME.tableContainer}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
-                    <th style={{ ...THEME.th, width: '60px' }}>#</th>
-                    <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
-                    <th style={THEME.th}>Kval. čas</th>
-                    <th style={THEME.th}>Kval. poz.</th>
-                    <th style={THEME.th}>1. jízda</th>
-                    <th style={THEME.th}>2. jízda</th>
-                    <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {catResults.map((res, idx) => (
-                    <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#555' }}>{idx + 1}.</td>
-                      <td style={{ ...THEME.td, fontWeight: '700' }}>{res.drivers?.full_name}</td>
-                      
-                      {/* KVALIFIKAČNÍ ČAS + MEDAILE ZA PP */}
-                      <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa' }}>
-                        {formatInterval(res.qualy_time)}
-                        {res.pole_position && (
-                          <span style={{ marginLeft: '8px' }} title="Vítěz kvalifikace (Pole Position)">🥇</span>
-                        )}
-                      </td>
-
-                      <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '600' }}>
-                        {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
-                      </td>
-                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
-                      <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
-                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>
-                        {(res.total_points || 0) + (res.extra_point || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-const titleRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '20px', marginBottom: '15px', flexWrap: 'wrap' };
-const navRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '30px' };
-const navColStyle: any = { minWidth: '150px', display: 'flex', justifyContent: 'center' };
-const navLinkStyle: any = { color: '#fbbf24', textDecoration: 'none', fontSize: '0.95rem', fontWeight: '600', whiteSpace: 'nowrap' };

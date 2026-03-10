@@ -55,8 +55,8 @@ export default async function DetailVysledkyPage(props: {
   return (
     <div style={THEME.container}>
       
-      {/* 1. NAVIGAČNÍ ODKAZY - Kompaktnější verze */}
-      <div style={navRowStyle}>
+      {/* 1. NAVIGAČNÍ ODKAZY NAHOŘE */}
+      <div style={navRowTopStyle}>
         <div style={navColStyle}>
           {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
         </div>
@@ -68,7 +68,7 @@ export default async function DetailVysledkyPage(props: {
         </div>
       </div>
 
-      {/* 2. NÁZEV A DATUM - Snížený rozestup a menší font */}
+      {/* 2. NÁZEV A DATUM */}
       <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
@@ -78,7 +78,6 @@ export default async function DetailVysledkyPage(props: {
             {formattedDate}
           </div>
         </div>
-
         {race.desc && (
           <div style={{ color: '#555', marginTop: '8px', fontStyle: 'italic', fontSize: '0.85rem' }}>
             {race.desc}
@@ -114,14 +113,12 @@ export default async function DetailVysledkyPage(props: {
                     <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
                       <td style={{ ...THEME.td, fontWeight: '700', fontSize: '0.95rem' }}>{res.drivers?.full_name}</td>
-                      
                       <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
                         {formatInterval(res.qualy_time)}
                         {res.pole_position && (
                           <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>
                         )}
                       </td>
-
                       <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
                         {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
                       </td>
@@ -138,6 +135,19 @@ export default async function DetailVysledkyPage(props: {
           </div>
         );
       })}
+
+      {/* 3. NAVIGAČNÍ ODKAZY DOLE (DUPLICITA) */}
+      <div style={navRowBottomStyle}>
+        <div style={navColStyle}>
+          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
+        </div>
+        <div style={navColStyle}>
+          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
+        </div>
+        <div style={navColStyle}>
+          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -153,14 +163,25 @@ const titleRowStyle: any = {
   flexWrap: 'wrap'
 };
 
-const navRowStyle: any = {
+const navRowTopStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   gap: '25px',
   borderBottom: '1px solid rgba(255,255,255,0.05)',
   paddingBottom: '12px',
-  marginBottom: '15px' // Snížený rozestup mezi navigací a názvem
+  marginBottom: '15px'
+};
+
+const navRowBottomStyle: any = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '25px',
+  borderTop: '1px solid rgba(255,255,255,0.05)',
+  paddingTop: '20px',
+  marginTop: '40px',
+  marginBottom: '40px'
 };
 
 const navColStyle: any = {

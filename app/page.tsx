@@ -11,7 +11,12 @@ const supabase = createClient(
 
 export default async function HomePage() {
   const { data: latestSeason } = await supabase.from('races').select('season_id').order('season_id', { ascending: false }).limit(1);
-  const currentYear = latestSeason?.[0]?.season_id || new Date().getFullYear();
+  
+  // Pokud je v URL parametr ?year=, použijeme ho, jinak nejnovější sezónu
+  // const currentYear = latestSeason?.[0]?.season_id || new Date().getFullYear();
+  const currentYear = searchParams.year ? parseInt(searchParams.year) : (latestSeason?.[0]?.season_id || 2026);
+  
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

@@ -56,8 +56,8 @@ export default async function DetailVysledkyPage(props: {
   return (
     <div style={THEME.container}>
       
-      {/* 1. NAVIGAČNÍ ODKAZY NAHOŘE */}
-      <div style={{ ...navRowStyle, marginBottom: '20px' }}>
+      {/* 1. NAVIGAČNÍ ODKAZY ÚPLNĚ NAHOŘE */}
+      <div style={{ ...navRowStyle, marginBottom: '30px' }}>
         <div style={navColStyle}>
           {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
         </div>
@@ -69,19 +69,19 @@ export default async function DetailVysledkyPage(props: {
         </div>
       </div>
 
-      {/* 2. HLAVNÍ NÁZEV A DATUM POD ODKAZY */}
+      {/* 2. NÁZEV (ZMENŠENÝ) A DATUM POD ODKAZY */}
       <div style={{ textAlign: 'center', marginBottom: '50px' }}>
         <div style={titleRowStyle}>
-          <h1 style={{ ...THEME.mainTitle, fontSize: '3.5rem', margin: 0 }}>
+          <h1 style={{ ...THEME.mainTitle, fontSize: '2.2rem', margin: 0 }}>
             {race.name}
           </h1>
-          <div style={{ color: '#888', fontSize: '1.2rem', fontWeight: '500', paddingBottom: '10px' }}>
+          <div style={{ color: '#888', fontSize: '1.1rem', fontWeight: '500' }}>
             {formattedDate}
           </div>
         </div>
 
         {race.desc && (
-          <div style={{ color: '#555', marginTop: '10px', fontStyle: 'italic' }}>
+          <div style={{ color: '#555', marginTop: '10px', fontStyle: 'italic', fontSize: '0.9rem' }}>
             {race.desc}
           </div>
         )}
@@ -94,7 +94,7 @@ export default async function DetailVysledkyPage(props: {
 
         return (
           <div key={cat.id} style={{ marginBottom: '60px' }}>
-            <h2 style={{ ...THEME.categoryTitle, borderLeft: '4px solid #fbbf24', paddingLeft: '15px' }}>
+            <h2 style={{ ...THEME.categoryTitle, borderLeft: '4px solid #fbbf24', paddingLeft: '15px', fontSize: '1.4rem' }}>
               🏆 {cat.name}
             </h2>
             <div style={THEME.tableContainer}>
@@ -128,7 +128,7 @@ export default async function DetailVysledkyPage(props: {
                       </td>
                       <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
                       <td style={{ ...THEME.td, textAlign: 'center' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
-                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.2rem' }}>
+                      <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                         {(res.total_points || 0) + (res.extra_point || 0)}
                       </td>
                     </tr>
@@ -149,7 +149,7 @@ const titleRowStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'baseline',
-  gap: '20px',
+  gap: '15px',
   marginBottom: '5px',
   flexWrap: 'wrap'
 };
@@ -158,7 +158,9 @@ const navRowStyle: any = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  gap: '30px'
+  gap: '30px',
+  borderBottom: '1px solid rgba(255,255,255,0.05)',
+  paddingBottom: '20px'
 };
 
 const navColStyle: any = {
@@ -170,7 +172,9 @@ const navColStyle: any = {
 const navLinkStyle: any = {
   color: '#fbbf24',
   textDecoration: 'none',
-  fontSize: '0.95rem',
+  fontSize: '0.9rem',
   fontWeight: '600',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  opacity: 0.8,
+  transition: 'opacity 0.2s'
 };

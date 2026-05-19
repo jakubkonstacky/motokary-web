@@ -29,8 +29,10 @@ export default function KontaktPage() {
       </div>
 
       {/* Sociální sítě - Sjednocený design */}
+      
       <div style={socialSectionStyle}>
         <h3 style={{ ...THEME.categoryTitle, textAlign: 'center' }}>Sledujte nás</h3>
+        {/* DOČASNĚ SKRYTO
         <div style={socialLinksWrapperStyle}>
           <span style={socialLinkStyle}>Instagram</span>
           <span style={socialDividerStyle}>|</span>
@@ -38,6 +40,7 @@ export default function KontaktPage() {
           <span style={socialDividerStyle}>|</span>
           <span style={socialLinkStyle}>YouTube</span>
         </div>
+        */
       </div>
     </div>
   );

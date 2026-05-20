@@ -209,4 +209,57 @@ export default async function DetailVysledkyPage(props: {
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
                       <th style={THEME.th}>Kval. čas</th>
                       <th style={THEME.th}>Kval. poz.</th>
-                      <th style={THEME.th}>1. jízda
+                      <th style={THEME.th}>1. jízda</th>
+                      <th style={THEME.th}>2. jízda</th>
+                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {catResults.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                        <td style={{ ...THEME.td, textAlign: 'left' }}>
+                          <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
+                          {formatInterval(row.qualy_time)}
+                          {row.pole_position && <span style={{ marginLeft: '6px' }}>🥇</span>}
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_qualy ? `${row.pos_qualy}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_1 ? `${row.pos_race_1}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_2 ? `${row.pos_race_2}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          {(row.total_points || 0) + (row.extra_point || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })
+      )}
+
+      {/* NAVIGAČNÍ ODKAZY DOLE */}
+      <div style={navRowBottomStyle}>
+        <div style={navColStyle}>
+          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
+        </div>
+        <div style={navColStyle}>
+          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
+        </div>
+        <div style={navColStyle}>
+          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- STYLY ---
+const titleRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '12px', marginBottom: '5px', flexWrap: 'wrap' };
+const navRowTopStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px', marginBottom: '15px' };
+const navRowBottomStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px', marginTop: '40px', marginBottom: '40px' };
+const navColStyle: any = { minWidth: '130px', display: 'flex', justifyContent: 'center' };
+const navLinkStyle: any = { color: '#fbbf24', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600', whiteSpace: 'nowrap', opacity: 0.7, transition: 'opacity 0.2s' };

@@ -42,6 +42,8 @@ export default async function DetailVysledkyPage(props: {
   const { data: nextRace } = await supabase.from('races').select('id').eq('season_id', race.season_id).gt('id', raceId).order('id', { ascending: true }).limit(1).single();
 
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
+  
+  // Přidali jsme 'team_name' do výběru z databáze
   const { data: results } = await supabase.from('results').select('*, drivers(full_name)').eq('race_id', raceId).order('total_points', { ascending: false });
 
   const d = new Date(race.race_date);
@@ -90,17 +92,48 @@ export default async function DetailVysledkyPage(props: {
         const catResults = results?.filter(r => r.category_id === cat.id) || [];
         if (catResults.length === 0) return null;
 
+        // ROZHODNUTÍ: Jde o týmový závod? (Alespoň jeden výsledek má vyplněný team_name)
+        const isTeamRace = catResults.some(r => r.team_name);
+
+        // Pokud jde o týmový závod, seskupíme položky podle jména týmu
+        let displayRows: any[] = [];
+        if (isTeamRace) {
+          const teamsMap: { [key: string]: any } = {};
+          catResults.forEach(r => {
+            const tName = r.team_name || 'Bezejmenný tým';
+            if (!teamsMap[tName]) {
+              teamsMap[tName] = {
+                team_name: tName,
+                drivers: [],
+                pos_qualy: r.pos_qualy,
+                qualy_time: r.qualy_time,
+                pos_race_1: r.pos_race_1,
+                pos_race_2: r.pos_race_2,
+                total_points: r.total_points,
+                extra_point: r.extra_point,
+                pole_position: r.pole_position
+              };
+            }
+            if (r.drivers?.full_name) {
+              teamsMap[tName].drivers.push(r.drivers.full_name);
+            }
+          });
+          displayRows = Object.values(teamsMap).sort((a, b) => (b.total_points + b.extra_point) - (a.total_points + a.extra_point));
+        } else {
+          displayRows = catResults;
+        }
+
         return (
           <div key={cat.id} style={{ marginBottom: '50px' }}>
             <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
-              🏆 {cat.name}
+              🏆 {cat.name} {isTeamRace && <span style={{ fontSize: '0.9rem', color: '#888', fontWeight: 'normal' }}>(Týmový závod)</span>}
             </h2>
             <div style={THEME.tableContainer}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
                     <th style={{ ...THEME.th, width: '50px' }}>#</th>
-                    <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
+                    <th style={{ ...THEME.th, textAlign: 'left' }}>{isTeamRace ? 'Tým / Jezdci' : 'Jezdec'}</th>
                     <th style={THEME.th}>Kval. čas</th>
                     <th style={THEME.th}>Kval. poz.</th>
                     <th style={THEME.th}>1. jízda</th>
@@ -109,23 +142,37 @@ export default async function DetailVysledkyPage(props: {
                   </tr>
                 </thead>
                 <tbody>
-                  {catResults.map((res, idx) => (
-                    <tr key={res.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  {displayRows.map((row, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
-                      <td style={{ ...THEME.td, fontWeight: '700', fontSize: '0.95rem' }}>{res.drivers?.full_name}</td>
+                      
+                      {/* Vykreslení jména (buď jezdec nebo tým + jezdci pod sebou/vedle sebe) */}
+                      <td style={{ ...THEME.td, textAlign: 'left' }}>
+                        {isTeamRace ? (
+                          <div>
+                            <div style={{ fontWeight: '800', color: '#fff', fontSize: '1rem' }}>{row.team_name}</div>
+                            <div style={{ fontSize: '0.8rem', color: '#888', marginTop: '2px' }}>
+                              {row.drivers.join(', ')}
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
+                        )}
+                      </td>
+                      
                       <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                        {formatInterval(res.qualy_time)}
-                        {res.pole_position && (
+                        {formatInterval(row.qualy_time)}
+                        {row.pole_position && (
                           <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>
                         )}
                       </td>
                       <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
-                        {res.pos_qualy ? `${res.pos_qualy}.` : '-'}
+                        {row.pos_qualy ? `${row.pos_qualy}.` : '-'}
                       </td>
-                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{res.pos_race_1 ? `${res.pos_race_1}.` : '-'}</td>
-                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{res.pos_race_2 ? `${res.pos_race_2}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_1 ? `${row.pos_race_1}.` : '-'}</td>
+                      <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_2 ? `${row.pos_race_2}.` : '-'}</td>
                       <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
-                        {(res.total_points || 0) + (res.extra_point || 0)}
+                        {(row.total_points || 0) + (row.extra_point || 0)}
                       </td>
                     </tr>
                   ))}
@@ -136,7 +183,7 @@ export default async function DetailVysledkyPage(props: {
         );
       })}
 
-      {/* 3. NAVIGAČNÍ ODKAZY DOLE (DUPLICITA) */}
+      {/* 3. NAVIGAČNÍ ODKAZY DOLE */}
       <div style={navRowBottomStyle}>
         <div style={navColStyle}>
           {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
@@ -153,49 +200,8 @@ export default async function DetailVysledkyPage(props: {
 }
 
 // --- STYLY ---
-
-const titleRowStyle: any = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'baseline',
-  gap: '12px',
-  marginBottom: '5px',
-  flexWrap: 'wrap'
-};
-
-const navRowTopStyle: any = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '25px',
-  borderBottom: '1px solid rgba(255,255,255,0.05)',
-  paddingBottom: '12px',
-  marginBottom: '15px'
-};
-
-const navRowBottomStyle: any = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '25px',
-  borderTop: '1px solid rgba(255,255,255,0.05)',
-  paddingTop: '20px',
-  marginTop: '40px',
-  marginBottom: '40px'
-};
-
-const navColStyle: any = {
-  minWidth: '130px',
-  display: 'flex',
-  justifyContent: 'center'
-};
-
-const navLinkStyle: any = {
-  color: '#fbbf24',
-  textDecoration: 'none',
-  fontSize: '0.85rem',
-  fontWeight: '600',
-  whiteSpace: 'nowrap',
-  opacity: 0.7,
-  transition: 'opacity 0.2s'
-};
+const titleRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '12px', marginBottom: '5px', flexWrap: 'wrap' };
+const navRowTopStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px', marginBottom: '15px' };
+const navRowBottomStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px', marginTop: '40px', marginBottom: '40px' };
+const navColStyle: any = { minWidth: '130px', display: 'flex', justifyContent: 'center' };
+const navLinkStyle: any = { color: '#fbbf24', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600', whiteSpace: 'nowrap', opacity: 0.7, transition: 'opacity 0.2s' };

@@ -153,7 +153,7 @@ export default async function DetailVysledkyPage(props: {
                         {/* Zde vypíšeme všechny 4 jezdce týmu vedle sebe do jednoho řádku i s jejich kategorií */}
                         <td style={{ ...THEME.td, textAlign: 'left' }}>
                           <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '1.05rem', marginBottom: '4px' }}>
-                            Tým: {team.team_name}
+                            {team.team_name}
                           </div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.85rem' }}>
                             {team.driversList.map((d: any, i: number) => (

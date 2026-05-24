@@ -1,38 +1,47 @@
-"use client"; // <--- TOHLE TADY CHYBĚLO PRO NEXT.JS BUILD
+"use client";
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js'; // Uprav podle svého projektu
+import { createClient } from '@supabase/supabase-js';
 
-// Inicializace Supabase (případně nahraď svým vlastním importem inicializovaného klienta)
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+// Inicializace Supabase klienta
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-// ROBUSTNÍ FORMÁTOVÁNÍ ČASU: Převede jakýkoliv formát (00:00:36.454, 00:36:454 atd.) na čisté "SS.MMM"
+// Formátování času na čisté "SS.MMM"
 const formatTime = (timeString: any) => {
   if (!timeString) return '--:--.---';
-  
   let str = timeString.toString().trim();
-  
-  // Odstraníme úvodní hodiny nebo minuty, pokud jsou nulové (00:00:36.454 -> 36.454)
   str = str.replace(/^00:/, '').replace(/^00:/, '');
-  
-  // Pokud zůstala dvojtečka těsně před milisekundami (např. "36:454"), opravíme ji na tečku
   str = str.replace(/:(\d{3})$/, '.$1');
-  
   return str;
 };
 
-interface DetailVysledkyProps {
-  raceId: string | number;
-  categoryId: string | number;
+// Definice povolených Next.js Page Props
+interface PageProps {
+  searchParams: {
+    raceId?: string;
+    categoryId?: string;
+  };
 }
 
-export default function DetailVysledky({ raceId, categoryId }: DetailVysledkyProps) {
+export default function DetailVysledky({ searchParams }: PageProps) {
+  // Vytáhneme ID přímo z URL query parametrů
+  const raceId = searchParams?.raceId;
+  const categoryId = searchParams?.categoryId;
+
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchResults() {
+      if (!raceId || !categoryId) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         
@@ -57,7 +66,7 @@ export default function DetailVysledky({ raceId, categoryId }: DetailVysledkyPro
 
         if (error) throw error;
 
-        // FIXED ŘAZENÍ: Přesná definice pořadí pro 3. závod ENZO CUP
+        // Pevné řazení jezdců podle výsledků 3. závodu ENZO
         const orderMap: Record<string, number> = {
           'Tomáš Musila': 1,
           'Jakub Konštacký': 2,
@@ -81,10 +90,12 @@ export default function DetailVysledky({ raceId, categoryId }: DetailVysledkyPro
       }
     }
 
-    if (raceId && categoryId) {
-      fetchResults();
-    }
+    fetchResults();
   }, [raceId, categoryId]);
+
+  if (!raceId || !categoryId) {
+    return <div className="p-8 text-center text-red-500">Chybí parametry závodu v URL adrese (raceId nebo categoryId).</div>;
+  }
 
   if (loading) return <div className="p-8 text-center text-gray-600">Načítám výsledky závodu...</div>;
   if (error) return <div className="p-8 text-center text-red-600 font-semibold">{error}</div>;

@@ -254,21 +254,21 @@ export default async function DetailVysledkyPage(props: {
 
                           {/* 1. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontWeight: '600', color: row.pos_race_1 === 1 ? '#fbbf24' : '#fff' }}>
-                              {row.pos_race_1 ? `${row.pos_race_1}. místo` : '-'}
-                            </div>
-                            <div style={{ fontFamily: 'monospace', color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                               {formatInterval(row.race_1_time)}
                             </div>
+                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                              ({row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'})
+                            </div>                            
                           </td>
 
                           {/* 2. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontWeight: '600', color: row.pos_race_2 === 1 ? '#fbbf24' : '#fff' }}>
-                              {row.pos_race_2 ? `${row.pos_race_2}. místo` : '-'}
-                            </div>
-                            <div style={{ fontFamily: 'monospace', color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                               {formatInterval(row.race_2_time)}
+                            </div>
+                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                              ({row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'})
                             </div>
                           </td>
 

@@ -1,208 +1,304 @@
-"use client";
 
-import { useEffect, useState } from 'react';
+
+
 import { createClient } from '@supabase/supabase-js';
+import { THEME } from '@/lib/theme';
+import Link from 'next/link';
+
+export const revalidate = 0;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const formatTime = (timeString: any) => {
-  if (!timeString) return '--:--.---';
-  let str = timeString.toString().trim();
-  str = str.replace(/^00:/, '').replace(/^00:/, '');
-  str = str.replace(/:(\d{3})$/, '.$1');
-  return str;
+const formatInterval = (interval: string | null) => {
+  if (!interval) return '--:--.---';
+  const parts = interval.split(':');
+  if (parts.length < 3) return interval;
+  const minutes = parts[1];
+  const secondsWithMs = parts[2];
+  const [seconds, ms] = secondsWithMs.split('.');
+  const formattedMs = ms ? ms.substring(0, 3) : '000';
+  return `${minutes}:${seconds}.${formattedMs}`;
 };
 
-interface PageProps {
-  searchParams: Promise<{
-    id?: string;
-    raceId?: string;
-    categoryId?: string;
-  }> | {
-    id?: string;
-    raceId?: string;
-    categoryId?: string;
-  };
-}
+export default async function DetailVysledkyPage(props: { 
+  searchParams: Promise<{ id?: string }> 
+}) {
+  const searchParams = await props.searchParams;
+  const raceId = searchParams.id ? parseInt(searchParams.id) : null;
 
-export default function DetailVysledky({ searchParams }: PageProps) {
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Pro jistotu obalíme čtení parametrů, aby to fungovalo napříč verzemi Next.js
-  const [resolvedParams, setResolvedParams] = useState<any>(null);
-
-  useEffect(() => {
-    if (searchParams instanceof Promise) {
-      searchParams.then(setResolvedParams);
-    } else {
-      setResolvedParams(searchParams);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    async function fetchResults() {
-      if (!resolvedParams) return;
-
-      // Flexibilní načtení parametrů - vezme buď raceId, nebo id
-      const actualRaceId = resolvedParams.raceId || resolvedParams.id;
-      const actualCategoryId = resolvedParams.categoryId;
-
-      if (!actualRaceId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        
-        let query = supabase
-          .from('results')
-          .select(`
-            pos_qualy,
-            qualy_time,
-            pos_race_1,
-            race_1_time,
-            pos_race_2,
-            race_2_time,
-            total_points,
-            extra_point,
-            pole_position,
-            drivers (
-              full_name
-            )
-          `)
-          .eq('race_id', actualRaceId);
-
-        // Category ID použijeme jen pokud v té URL reálně je
-        if (actualCategoryId) {
-          query = query.eq('category_id', actualCategoryId);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        // Pevné řazení jezdců podle výsledků 3. závodu ENZO
-        const orderMap: Record<string, number> = {
-          'Tomáš Musila': 1,
-          'Jakub Konštacký': 2,
-          'Roman Kadlíček': 3,
-          'Tomáš Veverka': 4,
-          'Lukáš Kupka': 5
-        };
-
-        const sortedData = (data || []).sort((a: any, b: any) => {
-          const nameA = a.drivers?.full_name || '';
-          const nameB = b.drivers?.full_name || '';
-          return (orderMap[nameA] || 99) - (orderMap[nameB] || 99);
-        });
-
-        setResults(sortedData);
-      } catch (err) {
-        console.error('Chyba při načítání výsledků:', err);
-        setError('Nepodařilo se načíst výsledky závodu.');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchResults();
-  }, [resolvedParams]);
-
-  if (!resolvedParams) return <div className="p-8 text-center text-gray-600">Načítám parametry...</div>;
-
-  const hasRaceId = resolvedParams.raceId || resolvedParams.id;
-  if (!hasRaceId) {
-    return <div className="p-8 text-center text-red-500">Chybí parametr ID závodu v URL adrese (id nebo raceId).</div>;
+  if (!raceId) {
+    return (
+      <div style={THEME.container}>
+        <h1 style={THEME.mainTitle}>Závod nenalezen</h1>
+        <Link href="/" style={{ color: '#fbbf24', textDecoration: 'none' }}>← Zpět na kalendář</Link>
+      </div>
+    );
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-600">Načítám výsledky závodu...</div>;
-  if (error) return <div className="p-8 text-center text-red-600 font-semibold">{error}</div>;
-  if (results.length === 0) return <div className="p-8 text-center text-gray-500">Pro tento závod nejsou k dispozici žádné výsledky.</div>;
+  const { data: race } = await supabase.from('races').select('*').eq('id', raceId).single();
+  if (!race) return <div style={THEME.container}>Závod neexistuje.</div>;
+
+  const { data: prevRace } = await supabase.from('races').select('id').eq('season_id', race.season_id).lt('id', raceId).order('id', { ascending: false }).limit(1).single();
+  const { data: nextRace } = await supabase.from('races').select('id').eq('season_id', race.season_id).gt('id', raceId).order('id', { ascending: true }).limit(1).single();
+
+  const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
+  
+  // Načteme výsledky a připojíme k nim jak řidiče, tak název jeho mateřské kategorie
+  const { data: results } = await supabase.from('results').select('*, drivers(full_name), categories(name)').eq('race_id', raceId);
+
+  const d = new Date(race.race_date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  const czechDays = ['NE', 'PO', 'ÚT', 'ST', 'ČT', 'PÁ', 'SO'];
+  const dayName = czechDays[d.getDay()];
+  const formattedDate = `${day}. ${month}. ${year} - ${dayName}`;
+
+  // ROZHODNUTÍ: Je tento závod týmový? (Alespoň jeden záznam má team_name)
+  const isTeamRace = results?.some(r => r.team_name) || false;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">Výsledková listina závodu</h2>
+    <div style={THEME.container}>
+      
+      {/* NAVIGAČNÍ ODKAZY NAHOŘE */}
+      <div style={navRowTopStyle}>
+        <div style={navColStyle}>
+          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
         </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-left">
-            <thead className="bg-gray-100 text-xs uppercase font-semibold text-gray-600">
-              <tr>
-                <th className="px-6 py-3 tracking-wider">Poz.</th>
-                <th className="px-6 py-3 tracking-wider">Jezdec</th>
-                <th className="px-6 py-3 tracking-wider">Kvalifikace</th>
-                <th className="px-6 py-3 tracking-wider">1. Závod (Pozice / Čas)</th>
-                <th className="px-6 py-3 tracking-wider">2. Závod (Pozice / Čas)</th>
-                <th className="px-6 py-3 tracking-wider text-right">Body</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 text-sm text-gray-700">
-              {results.map((row, index) => {
-                const driverName = row.drivers?.full_name || 'Neznámý jezdec';
-                const celkovePoradi = index + 1;
+        <div style={navColStyle}>
+          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
+        </div>
+        <div style={navColStyle}>
+          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
+        </div>
+      </div>
 
-                // Bezpečné parsování bodů z DB
-                const cisteBody = parseInt(row.total_points, 10) || 0;
-                const extraBod = parseInt(row.extra_point, 10) || 0;
+      {/* NÁZEV A DATUM */}
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={titleRowStyle}>
+          <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
+            {race.name}
+          </h1>
+          <div style={{ color: '#888', fontSize: '1rem', fontWeight: '500', opacity: 0.7 }}>
+            {formattedDate}
+          </div>
+        </div>
+        {race.desc && (
+          <div style={{ color: '#555', marginTop: '8px', fontStyle: 'italic', fontSize: '0.85rem' }}>
+            {race.desc}
+          </div>
+        )}
+      </div>
 
-                return (
-                  <tr key={index} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
-                      {celkovePoradi}. Místo
-                    </td>
+      {/* ZOBRAZENÍ VÝSLEDKŮ */}
+      {isTeamRace ? (
+        // ===================================================================
+        // JEDNA JEDINÁ KOMBINOVANÁ TABULKA PRO TÝMOVÝ ZÁVOD (Všichni jezdci spolu)
+        // ===================================================================
+        (() => {
+          const teamsMap: { [key: string]: any } = {};
+          
+          results?.forEach(r => {
+            const tName = r.team_name || 'Bezejmenný tým';
+            if (!teamsMap[tName]) {
+              teamsMap[tName] = {
+                team_name: tName,
+                driversList: [],
+                pos_qualy: r.pos_qualy,
+                qualy_time: r.qualy_time,
+                pos_race_1: r.pos_race_1,
+                pos_race_2: r.pos_race_2,
+                total_points: r.total_points,
+                extra_point: r.extra_point,
+                pole_position: r.pole_position
+              };
+            }
+            if (r.drivers?.full_name) {
+              // Přidáme jezdce i s jeho kategorií, např: "Tobias Frydl (Junior)"
+              const catName = r.categories?.name ? r.categories.name.replace(' CUP', '') : '';
+              teamsMap[tName].driversList.push({
+                name: r.drivers.full_name,
+                cat: catName
+              });
+            }
+          });
 
-                    <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
-                      {driverName}
-                    </td>
+          // Seřadíme týmy podle bodů od nejlepších
+          const sortedTeams = Object.values(teamsMap).sort(
+            (a, b) => (b.total_points + b.extra_point) - (a.total_points + a.extra_point)
+          );
 
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-1">
-                        <span className="font-medium text-gray-900">{formatTime(row.qualy_time)}</span>
-                        <span className="text-gray-500 text-xs">({row.pos_qualy}. poz)</span>
-                        {row.pole_position && (
-                          <span className="ml-1 bg-amber-100 text-amber-800 text-xs px-1.5 py-0.5 rounded font-bold flex items-center">
-                            🥇 PP
-                          </span>
-                        )}
-                      </div>
-                    </td>
+          return (
+            <div style={{ marginBottom: '50px' }}>
+              <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
+                🏆 Výsledky Vytrvalostního Týmového Závodu
+              </h2>
+              <div style={THEME.tableContainer}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
+                      <th style={{ ...THEME.th, width: '50px' }}>#</th>
+                      <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmu (Kategorie)</th>
+                      <th style={THEME.th}>Kval. čas</th>
+                      <th style={THEME.th}>Kval. poz.</th>
+                      <th style={THEME.th}>Závod poz.</th>
+                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
 
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{row.pos_race_1}. místo</div>
-                      <div className="text-gray-500 text-xs">{formatTime(row.race_1_time)}</div>
-                    </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{row.pos_race_2}. místo</div>
-                      <div className="text-gray-500 text-xs">{formatTime(row.race_2_time)}</div>
-                    </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-base text-gray-900">
-                      <div className="flex items-center justify-end space-x-1">
-                        {/* OPRAVA: Zobrazujeme výsledný sečtený bodový zisk bez textového lepení čísel */}
-                        <span>{cisteBody}</span>
-                        {extraBod > 0 && (
-                          <span className="text-green-600 text-xs font-normal bg-green-50 px-1.5 py-0.5 rounded">
-                            +{extraBod}b
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedTeams.map((team: any, idx: number) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                        
+                        {/* Zde vypíšeme všechny 4 jezdce týmu vedle sebe do jednoho řádku i s jejich kategorií */}
+                        <td style={{ ...THEME.td, textAlign: 'left' }}>
+                          <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '1.05rem', marginBottom: '4px' }}>
+                            {team.team_name}
+                          </div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.85rem' }}>
+                            {team.driversList.map((d: any, i: number) => (
+                              <span key={i} style={{ background: 'rgba(255,255,255,0.04)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <strong style={{ color: '#fff' }}>{d.name}</strong> 
+                                {d.cat && <span style={{ color: '#888', marginLeft: '4px', fontSize: '0.75rem' }}>({d.cat})</span>}
+
+
+
+
+
+
+
+
+
+
+
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        
+                        <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
+                          {formatInterval(team.qualy_time)}
+                          {team.pole_position && (
+                            <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>
+                          )}
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
+                          {team.pos_qualy ? `${team.pos_qualy}.` : '-'}
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: idx === 0 ? '#fbbf24' : '#fff' }}>
+                          {team.pos_race_1 ? `${team.pos_race_1}. Místo` : '-'}
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.15rem' }}>
+                          {(team.total_points || 0) + (team.extra_point || 0)}
+                        </td>
+                      </tr>
+                    ))}
+
+
+
+
+
+
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        // ===================================================================
+        // STANDARDNÍ ROZPAD PODLE KATEGORIÍ (Pro běžné individuální závody)
+        // ===================================================================
+        categories?.map((cat) => {
+          const catResults = results?.filter(r => r.category_id === cat.id) || [];
+          if (catResults.length === 0) return null;
+
+          return (
+            <div key={cat.id} style={{ marginBottom: '50px' }}>
+              <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
+                🏆 {cat.name}
+              </h2>
+              <div style={THEME.tableContainer}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
+                      <th style={{ ...THEME.th, width: '50px' }}>#</th>
+                      <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
+                      <th style={THEME.th}>Kval. čas</th>
+                      <th style={THEME.th}>Kval. poz.</th>
+                      <th style={THEME.th}>1. jízda</th>
+                      <th style={THEME.th}>2. jízda</th>
+                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {catResults.map((row, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                        <td style={{ ...THEME.td, textAlign: 'left' }}>
+                          <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
+                          {formatInterval(row.qualy_time)}
+                          {row.pole_position && <span style={{ marginLeft: '6px' }}>🥇</span>}
+                        </td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_qualy ? `${row.pos_qualy}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_1 ? `${row.pos_race_1}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_2 ? `${row.pos_race_2}.` : '-'}</td>
+                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          {(row.total_points || 0) + (row.extra_point || 0)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })
+      )}
+
+      {/* NAVIGAČNÍ ODKAZY DOLE */}
+      <div style={navRowBottomStyle}>
+        <div style={navColStyle}>
+          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
+        </div>
+        <div style={navColStyle}>
+          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
+        </div>
+        <div style={navColStyle}>
+          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
         </div>
       </div>
     </div>
   );
 }
+
+// --- STYLY ---
+const titleRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '12px', marginBottom: '5px', flexWrap: 'wrap' };
+const navRowTopStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px', marginBottom: '15px' };
+const navRowBottomStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px', marginTop: '40px', marginBottom: '40px' };
+const navColStyle: any = { minWidth: '130px', display: 'flex', justifyContent: 'center' };
+const navLinkStyle: any = { color: '#fbbf24', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600', whiteSpace: 'nowrap', opacity: 0.7, transition: 'opacity 0.2s' };

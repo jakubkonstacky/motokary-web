@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js'; // Pokud používáš vestavěný supabase klient, importuj svůj
+import { createClient } from '@supabase/supabase-js'; // Uprav import podle svého projektu
 
-// Inicializace Supabase (případně nahraď svým vlastním importem inicializovaného klienta)
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
-// Pomocná funkce pro vyčištění formátu času z databáze (např. "00:36:45.454" -> "36:45.454" nebo "36.454")
+// Vylepšená funkce pro formátování času z DB na formát "SS.MMM" nebo "MM:SS.MMM"
 const formatTime = (timeString) => {
   if (!timeString) return '--:--.---';
   
-  // Pokud čas začíná "00:", ořízneme ho pro čistější zobrazení
-  let cleanTime = timeString;
-  if (cleanTime.startsWith('00:')) {
+  let cleanTime = timeString.toString().trim();
+  
+  // Pokud interval z DB obsahuje hodiny/minuty ve formátu "00:00:36.454"
+  if (cleanTime.startsWith('00:00:')) {
+    cleanTime = cleanTime.substring(6);
+  } else if (cleanTime.startsWith('00:')) {
     cleanTime = cleanTime.substring(3);
   }
   
-  // Nahrazení případných teček/čárek pro jednotný vzhled
+  // Pokud na konci zůstala dvojtečka před milisekundami (např. 36:454), opravíme ji na tečku
+  // Hledá dvojtečku, po které následují přesně 3 číslice na konci řetězce
+  cleanTime = cleanTime.replace(/:(\d{3})$/, '.$1');
+  
   return cleanTime.replace(',', '.');
 };
 
@@ -28,7 +33,6 @@ export default function DetailVysledky({ raceId, categoryId }) {
       try {
         setLoading(true);
         
-        // SQL dotaz přepsaný do Supabase JS syntaxe s novými sloupci pro časy závodů
         const { data, error } = await supabase
           .from('results')
           .select(`
@@ -50,13 +54,9 @@ export default function DetailVysledky({ raceId, categoryId }) {
 
         if (error) throw error;
 
-        // Seřazení výsledků: primárně podle bodů sestupně, sekundárně podle vyhrané kvalifikace (Pole Position)
-        const sortedData = data.sort((a, b) => {
-          if (b.total_points !== a.total_points) {
-            return b.total_points - a.total_points;
-          }
-          return (b.pole_position ? 1 : 0) - (a.pole_position ? 1 : 0);
-        });
+        // OPRAVA ŘAZENÍ: Řadíme striktně podle celkových bodů do šampionátu sestupně.
+        // Pokud mají stejně bodů, nerozhoduje PP, ale to, kdo má víc bodů.
+        const sortedData = data.sort((a, b) => b.total_points - a.total_points);
 
         setResults(sortedData);
       } catch (err) {
@@ -112,7 +112,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
                       {driverName}
                     </td>
 
-                    {/* Kvalifikace */}
+                    {/* Kvalifikace (OPRAVA: volá se čistě formátovaný čas z DB) */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-1">
                         <span className="font-medium text-gray-900">{formatTime(row.qualy_time)}</span>
@@ -122,3 +122,39 @@ export default function DetailVysledky({ raceId, categoryId }) {
                             🥇 PP
                           </span>
                         )}
+                      </div>
+                    </td>
+
+                    {/* 1. Závod */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">{row.pos_race_1}. místo</div>
+                      <div className="text-gray-500 text-xs">{formatTime(row.race_1_time)}</div>
+                    </td>
+
+                    {/* 2. Závod */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">{row.pos_race_2}. místo</div>
+                      <div className="text-gray-500 text-xs">{formatTime(row.race_2_time)}</div>
+                    </td>
+
+                    {/* Celkové body do šampionátu */}
+                    <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-base text-gray-900">
+                      <div className="flex items-center justify-end space-x-1">
+                        <span>{row.total_points}</span>
+                        {row.extra_point > 0 && (
+                          <span className="text-green-600 text-xs font-normal bg-green-50 px-1.5 py-0.5 rounded">
+                            +{row.extra_point}b
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

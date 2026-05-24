@@ -108,9 +108,9 @@ export default async function DetailVysledkyPage(props: {
                 pos_qualy: r.pos_qualy,
                 qualy_time: r.qualy_time,
                 pos_race_1: r.pos_race_1,
-                race_1_time: r.race_1_time, // Oprava: Přidáno pro týmy
+                race_1_time: r.race_1_time, 
                 pos_race_2: r.pos_race_2,
-                race_2_time: r.race_2_time, // Oprava: Přidáno pro týmy
+                race_2_time: r.race_2_time, 
                 total_points: r.total_points,
                 extra_point: r.extra_point,
                 pole_position: r.pole_position

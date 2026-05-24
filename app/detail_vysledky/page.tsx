@@ -3,13 +3,11 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializace Supabase klienta
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Formátování času na čisté "SS.MMM"
 const formatTime = (timeString: any) => {
   if (!timeString) return '--:--.---';
   let str = timeString.toString().trim();
@@ -18,26 +16,43 @@ const formatTime = (timeString: any) => {
   return str;
 };
 
-// Definice povolených Next.js Page Props
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
+    id?: string;
+    raceId?: string;
+    categoryId?: string;
+  }> | {
+    id?: string;
     raceId?: string;
     categoryId?: string;
   };
 }
 
 export default function DetailVysledky({ searchParams }: PageProps) {
-  // Vytáhneme ID přímo z URL query parametrů
-  const raceId = searchParams?.raceId;
-  const categoryId = searchParams?.categoryId;
-
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Pro jistotu obalíme čtení parametrů, aby to fungovalo napříč verzemi Next.js
+  const [resolvedParams, setResolvedParams] = useState<any>(null);
+
+  useEffect(() => {
+    if (searchParams instanceof Promise) {
+      searchParams.then(setResolvedParams);
+    } else {
+      setResolvedParams(searchParams);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     async function fetchResults() {
-      if (!raceId || !categoryId) {
+      if (!resolvedParams) return;
+
+      // Flexibilní načtení parametrů - vezme buď raceId, nebo id
+      const actualRaceId = resolvedParams.raceId || resolvedParams.id;
+      const actualCategoryId = resolvedParams.categoryId;
+
+      if (!actualRaceId) {
         setLoading(false);
         return;
       }
@@ -45,7 +60,7 @@ export default function DetailVysledky({ searchParams }: PageProps) {
       try {
         setLoading(true);
         
-        const { data, error } = await supabase
+        let query = supabase
           .from('results')
           .select(`
             pos_qualy,
@@ -61,8 +76,14 @@ export default function DetailVysledky({ searchParams }: PageProps) {
               full_name
             )
           `)
-          .eq('race_id', raceId)
-          .eq('category_id', categoryId);
+          .eq('race_id', actualRaceId);
+
+        // Category ID použijeme jen pokud v té URL reálně je
+        if (actualCategoryId) {
+          query = query.eq('category_id', actualCategoryId);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -91,10 +112,13 @@ export default function DetailVysledky({ searchParams }: PageProps) {
     }
 
     fetchResults();
-  }, [raceId, categoryId]);
+  }, [resolvedParams]);
 
-  if (!raceId || !categoryId) {
-    return <div className="p-8 text-center text-red-500">Chybí parametry závodu v URL adrese (raceId nebo categoryId).</div>;
+  if (!resolvedParams) return <div className="p-8 text-center text-gray-600">Načítám parametry...</div>;
+
+  const hasRaceId = resolvedParams.raceId || resolvedParams.id;
+  if (!hasRaceId) {
+    return <div className="p-8 text-center text-red-500">Chybí parametr ID závodu v URL adrese (id nebo raceId).</div>;
   }
 
   if (loading) return <div className="p-8 text-center text-gray-600">Načítám výsledky závodu...</div>;
@@ -125,7 +149,8 @@ export default function DetailVysledky({ searchParams }: PageProps) {
                 const driverName = row.drivers?.full_name || 'Neznámý jezdec';
                 const celkovePoradi = index + 1;
 
-                const čistéBody = parseInt(row.total_points, 10) || 0;
+                // Bezpečné parsování bodů z DB
+                const cisteBody = parseInt(row.total_points, 10) || 0;
                 const extraBod = parseInt(row.extra_point, 10) || 0;
 
                 return (
@@ -162,7 +187,8 @@ export default function DetailVysledky({ searchParams }: PageProps) {
 
                     <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-base text-gray-900">
                       <div className="flex items-center justify-end space-x-1">
-                        <span>{čistéBody}</span>
+                        {/* OPRAVA: Zobrazujeme výsledný sečtený bodový zisk bez textového lepení čísel */}
+                        <span>{cisteBody}</span>
                         {extraBod > 0 && (
                           <span className="text-green-600 text-xs font-normal bg-green-50 px-1.5 py-0.5 rounded">
                             +{extraBod}b

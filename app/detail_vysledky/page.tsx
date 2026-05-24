@@ -143,7 +143,7 @@ export default async function DetailVysledkyPage(props: {
                       <th style={{ ...THEME.th, width: '50px' }}>#</th>
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmu (Kategorie)</th>
                       <th style={THEME.th}>Kvalifikace</th>
-                      <th style={THEME.th}>Závod (Poz. / Čas)</th>
+                      <th style={THEME.th}>Závod (Čas/Poz.)</th>
                       <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>
@@ -171,20 +171,21 @@ export default async function DetailVysledkyPage(props: {
                             {formatInterval(team.qualy_time)}
                              </div>
                              <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                            {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
-                               XXX
+                               {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
                               ({row.pos_qualy ? `${row.pos_qualy}. poz` : '-'})
-                              {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                             </div>
                           </td>
-                            
+
+                         {/* 1. JÍZDA - DOPLNĚN ČAS */}
+                          <td style={{ ...THEME.td, textAlign: 'center' }}>
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {formatInterval(row.race_1_time)}
+                            </div>
+                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                              ({row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'})
+                            </div>                            
                           </td>
-                          <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
-                            {team.pos_qualy ? `${team.pos_qualy}.` : '-'}
-                          </td>
-                          <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: idx === 0 ? '#fbbf24' : '#fff' }}>
-                            {team.pos_race_1 ? `${team.pos_race_1}. Místo` : '-'}
-                          </td>
+
                           <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.15rem' }}>
                             {cisteBody + (parseInt(team.extra_point, 10) || 0)}
                           </td>
@@ -231,7 +232,7 @@ export default async function DetailVysledkyPage(props: {
                     <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
                       <th style={{ ...THEME.th, width: '50px' }}>#</th>
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
-                      <th style={THEME.th}>Kvalifikace</th>
+                      <th style={THEME.th}>Kvalifikace XX</th>
                       <th style={THEME.th}>1. jízda (Poz. / Čas)</th>
                       <th style={THEME.th}>2. jízda (Poz. / Čas)</th>
                       <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>

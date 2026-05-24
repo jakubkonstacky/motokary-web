@@ -172,17 +172,17 @@ export default async function DetailVysledkyPage(props: {
                              </div>
                              <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
                                {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
-                              ({row.pos_qualy ? `${row.pos_qualy}. poz` : '-'})
+                              ({team.pos_qualy ? `${team.pos_qualy}. poz` : '-'})
                             </div>
                           </td>
 
                          {/* 1. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
                             <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {formatInterval(row.race_1_time)}
+                              {formatInterval(team.race_1_time)}
                             </div>
                            <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                              ({row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'})
+                              ({team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'})
                             </div>                            
                           </td>
 

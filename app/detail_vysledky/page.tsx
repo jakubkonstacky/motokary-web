@@ -129,8 +129,12 @@ export default async function DetailVysledkyPage(props: {
             (a: any, b: any) => {
               const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
               const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
-              return scoreB - scoreA;
-            }
+              if (scoreB !== scoreA) {
+                  return scoreB - scoreA; // Sestupně podle bodů
+                }
+                // Při shodě bodů rozhoduje lepší pozice v kvalifikaci (vzestupně, 1 je nejlepší)
+                return (parseInt(a.pos_qualy, 10) || 99) - (parseInt(b.pos_qualy, 10) || 99);
+              }
           );
 
           return (
@@ -205,24 +209,22 @@ export default async function DetailVysledkyPage(props: {
         // ===================================================================
         // STANDARDNÍ ROZPAD PODLE KATEGORIÍ (VČETNĚ ČASŮ JÍZD 1 A 2)
         // ===================================================================
-        categories?.map((cat) => {
-          const catResults = results?.filter(r => r.category_id === cat.id) || [];
-          if (catResults.length === 0) return null;
-
-          // Pevná definice pořadí dne (obchází chybu v tabulce ze souboru)
-          const orderMap: Record<string, number> = {
-            'Tomáš Musila': 1,
-            'Jakub Konštacký': 2,
-            'Roman Kadlíček': 3,
-            'Tomáš Veverka': 4,
-            'Lukáš Kupka': 5
-          };
-
+      categories?.map((cat) => {
+        const catResults = results?.filter(r => r.category_id === cat.id) || [];
+        if (catResults.length === 0) return null;
+      
+       // DYNAMICKÉ ŘAZENÍ JEZDCŮ: Body sestupně -> Kvalifikace vzestupně (při shodě)
           const sortedResults = [...catResults].sort((a: any, b: any) => {
-            const nameA = a.drivers?.full_name || '';
-            const nameB = b.drivers?.full_name || '';
-            return (orderMap[nameA] || 99) - (orderMap[nameB] || 99);
+            const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
+            const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
+            
+            if (scoreB !== scoreA) {
+              return scoreB - scoreA; // Sestupně podle bodů
+            }
+            // Shoda bodů: Rozhoduje lepší (nižší číslo) pozice v kvalifikaci
+            return (parseInt(a.pos_qualy, 10) || 99) - (parseInt(b.pos_qualy, 10) || 99);
           });
+
 
           return (
             <div key={cat.id} style={{ marginBottom: '50px' }}>

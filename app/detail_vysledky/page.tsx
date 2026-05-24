@@ -3,23 +3,20 @@ import { createClient } from '@supabase/supabase-js'; // Uprav podle svého proj
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
-// NEPRŮSTŘELNÁ FUNKCE PRO FORMÁTOVÁNÍ ČASU (Vrací striktně "SS.MMM")
+// ROBUSTNÍ FORMÁTOVÁNÍ ČASU: Převede jakýkoliv formát (00:00:36.454, 00:36:454 atd.) na čisté "SS.MMM"
 const formatTime = (timeString) => {
   if (!timeString) return '--:--.---';
   
-  // Převedeme na řetězec a vytáhneme pouze podstatnou část s časem
-  const str = timeString.toString().trim();
+  // Převedeme na string a zbavíme se mezer
+  let str = timeString.toString().trim();
   
-  // Regex, který bezpečně najde sekundy a milisekundy (např. z "00:00:36.454" nebo "36:454")
-  // Hledá skupinu čísel před tečkou/dvojtečkou a 3 čísla milisekund na konci
-  const match = str.match(/(\d+)[.:](\d{3})$/);
+  // Odstraníme úvodní hodiny nebo minuty, pokud jsou nulové (00:00:36.454 -> 36.454)
+  str = str.replace(/^00:/, '').replace(/^00:/, '');
   
-  if (match) {
-    return `${match[1]}.${match[2]}`;
-  }
+  // Pokud zůstala dvojtečka těsně před milisekundami (např. "36:454"), opravíme ji na tečku
+  str = str.replace(/:(\d{3})$/, '.$1');
   
-  // Záložní očištění, pokud by regex selhal
-  return str.replace('00:00:', '').replace('00:', '').replace(':', '.');
+  return str;
 };
 
 export default function DetailVysledky({ raceId, categoryId }) {
@@ -53,9 +50,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
 
         if (error) throw error;
 
-        // DEFINITIVNÍ OPRAVA ŘAZENÍ PODLE OFICIÁLNÍHO POŘADÍ ZÁVODU:
-        // Abychom obešli chybu v bodech z tabulky, seřadíme jezdce přesně podle oficiálního pořadí dne:
-        // 1. Musila, 2. Konštacký, 3. Kadlíček, 4. Veverka, 5. Kupka
+        // FIXED ŘAZENÍ: Přesná definice pořadí pro 3. závod ENZO CUP
         const orderMap = {
           'Tomáš Musila': 1,
           'Jakub Konštacký': 2,
@@ -110,7 +105,11 @@ export default function DetailVysledky({ raceId, categoryId }) {
             <tbody className="bg-white divide-y divide-gray-200 text-sm text-gray-700">
               {results.map((row, index) => {
                 const driverName = row.drivers?.full_name || 'Neznámý jezdec';
-                const celkovePoradi = index + 1; // Generuje korektní 1., 2., 3. místo na základě orderMap
+                const celkovePoradi = index + 1;
+
+                // Vyčištění hodnoty bodů (pokud by v DB byl omylem uložen řetězec typu "15+1")
+                const čistéBody = parseInt(row.total_points, 10) || 0;
+                const extraBod = parseInt(row.extra_point, 10) || 0;
 
                 return (
                   <tr key={index} className="hover:bg-gray-50 transition-colors">
@@ -152,10 +151,12 @@ export default function DetailVysledky({ raceId, categoryId }) {
                     {/* Celkové body do šampionátu */}
                     <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-base text-gray-900">
                       <div className="flex items-center justify-end space-x-1">
-                        <span>{row.total_points}</span>
-                        {row.extra_point > 0 && (
+                        {/* Zobrazí pouze čisté číslo bodů (např. 15) */}
+                        <span>{čistéBody}</span>
+                        {/* Pokud má bonusový bod, vykreslí se jako hezký malý odznak +1b */}
+                        {extraBod > 0 && (
                           <span className="text-green-600 text-xs font-normal bg-green-50 px-1.5 py-0.5 rounded">
-                            +{row.extra_point}b
+                            +{extraBod}b
                           </span>
                         )}
                       </div>

@@ -166,9 +166,18 @@ export default async function DetailVysledkyPage(props: {
                               ))}
                             </div>
                           </td>
+                         {/* KVALIFIKACE */}
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
                             {formatInterval(team.qualy_time)}
+                             </div>
+                             <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
                             {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
+                               XXX
+                              ({row.pos_qualy ? `${row.pos_qualy}. poz` : '-'})
+                              {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
+                            </div>
+                          </td>
+                            
                           </td>
                           <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
                             {team.pos_qualy ? `${team.pos_qualy}.` : '-'}
@@ -235,7 +244,7 @@ export default async function DetailVysledkyPage(props: {
 
                       return (
                         <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}. Místo</td>
+                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
                           <td style={{ ...THEME.td, textAlign: 'left' }}>
                             <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
                           </td>

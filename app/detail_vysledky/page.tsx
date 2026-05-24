@@ -1,13 +1,15 @@
+"use client"; // <--- TOHLE TADY CHYBĚLO PRO NEXT.JS BUILD
+
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js'; // Uprav podle svého projektu
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+// Inicializace Supabase (případně nahraď svým vlastním importem inicializovaného klienta)
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 // ROBUSTNÍ FORMÁTOVÁNÍ ČASU: Převede jakýkoliv formát (00:00:36.454, 00:36:454 atd.) na čisté "SS.MMM"
-const formatTime = (timeString) => {
+const formatTime = (timeString: any) => {
   if (!timeString) return '--:--.---';
   
-  // Převedeme na string a zbavíme se mezer
   let str = timeString.toString().trim();
   
   // Odstraníme úvodní hodiny nebo minuty, pokud jsou nulové (00:00:36.454 -> 36.454)
@@ -19,10 +21,15 @@ const formatTime = (timeString) => {
   return str;
 };
 
-export default function DetailVysledky({ raceId, categoryId }) {
-  const [results, setResults] = useState([]);
+interface DetailVysledkyProps {
+  raceId: string | number;
+  categoryId: string | number;
+}
+
+export default function DetailVysledky({ raceId, categoryId }: DetailVysledkyProps) {
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchResults() {
@@ -51,7 +58,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
         if (error) throw error;
 
         // FIXED ŘAZENÍ: Přesná definice pořadí pro 3. závod ENZO CUP
-        const orderMap = {
+        const orderMap: Record<string, number> = {
           'Tomáš Musila': 1,
           'Jakub Konštacký': 2,
           'Roman Kadlíček': 3,
@@ -59,7 +66,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
           'Lukáš Kupka': 5
         };
 
-        const sortedData = data.sort((a, b) => {
+        const sortedData = (data || []).sort((a: any, b: any) => {
           const nameA = a.drivers?.full_name || '';
           const nameB = b.drivers?.full_name || '';
           return (orderMap[nameA] || 99) - (orderMap[nameB] || 99);
@@ -107,23 +114,19 @@ export default function DetailVysledky({ raceId, categoryId }) {
                 const driverName = row.drivers?.full_name || 'Neznámý jezdec';
                 const celkovePoradi = index + 1;
 
-                // Vyčištění hodnoty bodů (pokud by v DB byl omylem uložen řetězec typu "15+1")
                 const čistéBody = parseInt(row.total_points, 10) || 0;
                 const extraBod = parseInt(row.extra_point, 10) || 0;
 
                 return (
                   <tr key={index} className="hover:bg-gray-50 transition-colors">
-                    {/* Celkové pořadí dne */}
                     <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
                       {celkovePoradi}. Místo
                     </td>
 
-                    {/* Jméno jezdce */}
                     <td className="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">
                       {driverName}
                     </td>
 
-                    {/* Kvalifikace */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-1">
                         <span className="font-medium text-gray-900">{formatTime(row.qualy_time)}</span>
@@ -136,24 +139,19 @@ export default function DetailVysledky({ raceId, categoryId }) {
                       </div>
                     </td>
 
-                    {/* 1. Závod */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-medium text-gray-900">{row.pos_race_1}. místo</div>
                       <div className="text-gray-500 text-xs">{formatTime(row.race_1_time)}</div>
                     </td>
 
-                    {/* 2. Závod */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="font-medium text-gray-900">{row.pos_race_2}. místo</div>
                       <div className="text-gray-500 text-xs">{formatTime(row.race_2_time)}</div>
                     </td>
 
-                    {/* Celkové body do šampionátu */}
                     <td className="px-6 py-4 whitespace-nowrap text-right font-bold text-base text-gray-900">
                       <div className="flex items-center justify-end space-x-1">
-                        {/* Zobrazí pouze čisté číslo bodů (např. 15) */}
                         <span>{čistéBody}</span>
-                        {/* Pokud má bonusový bod, vykreslí se jako hezký malý odznak +1b */}
                         {extraBod > 0 && (
                           <span className="text-green-600 text-xs font-normal bg-green-50 px-1.5 py-0.5 rounded">
                             +{extraBod}b

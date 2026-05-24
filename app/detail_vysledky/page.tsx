@@ -142,9 +142,8 @@ export default async function DetailVysledkyPage(props: {
                     <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
                       <th style={{ ...THEME.th, width: '50px' }}>#</th>
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmu (Kategorie)</th>
-                      <th style={THEME.th}>Kval. čas</th>
-                      <th style={THEME.th}>Kval. poz.</th>
-                      <th style={THEME.th}>Závod poz.</th>
+                      <th style={THEME.th}>Kvalifikace</th>
+                      <th style={THEME.th}>Závod (Poz. / Čas)</th>
                       <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>

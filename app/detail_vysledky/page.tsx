@@ -1,6 +1,3 @@
-
-
-
 import { createClient } from '@supabase/supabase-js';
 import { THEME } from '@/lib/theme';
 import Link from 'next/link';
@@ -12,15 +9,17 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Vylepšená čistící funkce pro zobrazení časů ve formátu "SS.MMM" nebo "MM:SS.MMM"
 const formatInterval = (interval: string | null) => {
   if (!interval) return '--:--.---';
-  const parts = interval.split(':');
-  if (parts.length < 3) return interval;
-  const minutes = parts[1];
-  const secondsWithMs = parts[2];
-  const [seconds, ms] = secondsWithMs.split('.');
-  const formattedMs = ms ? ms.substring(0, 3) : '000';
-  return `${minutes}:${seconds}.${formattedMs}`;
+  let str = interval.toString().trim();
+  
+  // Odstranění zbytečných úvodních nul z Postgres intervalu
+  str = str.replace(/^00:/, '').replace(/^00:/, '');
+  // Oprava případné dvojtečky na tečku před milisekundami
+  str = str.replace(/:(\d{3})$/, '.$1');
+  
+  return str;
 };
 
 export default async function DetailVysledkyPage(props: { 
@@ -46,7 +45,7 @@ export default async function DetailVysledkyPage(props: {
 
   const { data: categories } = await supabase.from('categories').select('*').eq('season_id', race.season_id).order('order_by', { ascending: true });
   
-  // Načteme výsledky a připojíme k nim jak řidiče, tak název jeho mateřské kategorie
+  // Načteme všechny potřebné sloupce včetně nově přidaných časů jednotlivých jízd
   const { data: results } = await supabase.from('results').select('*, drivers(full_name), categories(name)').eq('race_id', raceId);
 
   const d = new Date(race.race_date);
@@ -57,7 +56,6 @@ export default async function DetailVysledkyPage(props: {
   const dayName = czechDays[d.getDay()];
   const formattedDate = `${day}. ${month}. ${year} - ${dayName}`;
 
-  // ROZHODNUTÍ: Je tento závod týmový? (Alespoň jeden záznam má team_name)
   const isTeamRace = results?.some(r => r.team_name) || false;
 
   return (
@@ -96,7 +94,7 @@ export default async function DetailVysledkyPage(props: {
       {/* ZOBRAZENÍ VÝSLEDKŮ */}
       {isTeamRace ? (
         // ===================================================================
-        // JEDNA JEDINÁ KOMBINOVANÁ TABULKA PRO TÝMOVÝ ZÁVOD (Všichni jezdci spolu)
+        // JEDNA JEDINÁ KOMBINOVANÁ TABULKA PRO TÝMOVÝ ZÁVOD
         // ===================================================================
         (() => {
           const teamsMap: { [key: string]: any } = {};
@@ -117,7 +115,6 @@ export default async function DetailVysledkyPage(props: {
               };
             }
             if (r.drivers?.full_name) {
-              // Přidáme jezdce i s jeho kategorií, např: "Tobias Frydl (Junior)"
               const catName = r.categories?.name ? r.categories.name.replace(' CUP', '') : '';
               teamsMap[tName].driversList.push({
                 name: r.drivers.full_name,
@@ -126,9 +123,12 @@ export default async function DetailVysledkyPage(props: {
             }
           });
 
-          // Seřadíme týmy podle bodů od nejlepších
           const sortedTeams = Object.values(teamsMap).sort(
-            (a, b) => (b.total_points + b.extra_point) - (a.total_points + a.extra_point)
+            (a: any, b: any) => {
+              const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
+              const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
+              return scoreB - scoreA;
+            }
           );
 
           return (
@@ -146,159 +146,17 @@ export default async function DetailVysledkyPage(props: {
                       <th style={THEME.th}>Kval. poz.</th>
                       <th style={THEME.th}>Závod poz.</th>
                       <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedTeams.map((team: any, idx: number) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
-                        
-                        {/* Zde vypíšeme všechny 4 jezdce týmu vedle sebe do jednoho řádku i s jejich kategorií */}
-                        <td style={{ ...THEME.td, textAlign: 'left' }}>
-                          <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '1.05rem', marginBottom: '4px' }}>
-                            {team.team_name}
-                          </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.85rem' }}>
-                            {team.driversList.map((d: any, i: number) => (
-                              <span key={i} style={{ background: 'rgba(255,255,255,0.04)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <strong style={{ color: '#fff' }}>{d.name}</strong> 
-                                {d.cat && <span style={{ color: '#888', marginLeft: '4px', fontSize: '0.75rem' }}>({d.cat})</span>}
-
-
-
-
-
-
-
-
-
-
-
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        
-                        <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                          {formatInterval(team.qualy_time)}
-                          {team.pole_position && (
-                            <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>
-                          )}
-                        </td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>
-                          {team.pos_qualy ? `${team.pos_qualy}.` : '-'}
-                        </td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: idx === 0 ? '#fbbf24' : '#fff' }}>
-                          {team.pos_race_1 ? `${team.pos_race_1}. Místo` : '-'}
-                        </td>
-                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.15rem' }}>
-                          {(team.total_points || 0) + (team.extra_point || 0)}
-                        </td>
-                      </tr>
-                    ))}
-
-
-
-
-
-
-
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })()
-      ) : (
-        // ===================================================================
-        // STANDARDNÍ ROZPAD PODLE KATEGORIÍ (Pro běžné individuální závody)
-        // ===================================================================
-        categories?.map((cat) => {
-          const catResults = results?.filter(r => r.category_id === cat.id) || [];
-          if (catResults.length === 0) return null;
-
-          return (
-            <div key={cat.id} style={{ marginBottom: '50px' }}>
-              <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
-                🏆 {cat.name}
-              </h2>
-              <div style={THEME.tableContainer}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
-                      <th style={{ ...THEME.th, width: '50px' }}>#</th>
-                      <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
-                      <th style={THEME.th}>Kval. čas</th>
-                      <th style={THEME.th}>Kval. poz.</th>
-                      <th style={THEME.th}>1. jízda</th>
-                      <th style={THEME.th}>2. jízda</th>
-                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {catResults.map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
-                        <td style={{ ...THEME.td, textAlign: 'left' }}>
-                          <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
-                        </td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                          {formatInterval(row.qualy_time)}
-                          {row.pole_position && <span style={{ marginLeft: '6px' }}>🥇</span>}
-                        </td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_qualy ? `${row.pos_qualy}.` : '-'}</td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_1 ? `${row.pos_race_1}.` : '-'}</td>
-                        <td style={{ ...THEME.td, textAlign: 'center', fontSize: '0.9rem' }}>{row.pos_race_2 ? `${row.pos_race_2}.` : '-'}</td>
-                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
-                          {(row.total_points || 0) + (row.extra_point || 0)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })
-      )}
-
-      {/* NAVIGAČNÍ ODKAZY DOLE */}
-      <div style={navRowBottomStyle}>
-        <div style={navColStyle}>
-          {prevRace && <Link href={`/detail_vysledky?id=${prevRace.id}`} style={navLinkStyle}>← Předchozí</Link>}
-        </div>
-        <div style={navColStyle}>
-          <Link href="/" style={navLinkStyle}>← Zpět na kalendář</Link>
-        </div>
-        <div style={navColStyle}>
-          {nextRace && <Link href={`/detail_vysledky?id=${nextRace.id}`} style={navLinkStyle}>Následující →</Link>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- STYLY ---
-const titleRowStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '12px', marginBottom: '5px', flexWrap: 'wrap' };
-const navRowTopStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '12px', marginBottom: '15px' };
-const navRowBottomStyle: any = { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '25px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px', marginTop: '40px', marginBottom: '40px' };
-const navColStyle: any = { minWidth: '130px', display: 'flex', justifyContent: 'center' };
-const navLinkStyle: any = { color: '#fbbf24', textDecoration: 'none', fontSize: '0.85rem', fontWeight: '600', whiteSpace: 'nowrap', opacity: 0.7, transition: 'opacity 0.2s' };
+                    {sortedTeams.map((team: any, idx: number) => {
+                      const cisteBody = parseInt(team.total_points, 10) || 0;
+                      return (
+                        <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                          <td style={{ ...THEME.td, textAlign: 'left' }}>
+                            <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '1.05rem', marginBottom: '4px' }}>
+                              {team.team_name}
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.85rem' }}>
+                              {team.driversList.map((d: any, i: number) => (

@@ -170,6 +170,7 @@ export default async function DetailVysledkyPage(props: {
                           </td>
                          {/* KVALIFIKACE */}
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
+                              <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                             {formatInterval(team.qualy_time)}
                              </div>
                              <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>

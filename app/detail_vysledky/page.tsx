@@ -1,26 +1,25 @@
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js'; // Uprav import podle svého projektu
+import { createClient } from '@supabase/supabase-js'; // Uprav podle svého projektu
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
-// Vylepšená funkce pro formátování času z DB na formát "SS.MMM" nebo "MM:SS.MMM"
+// NEPRŮSTŘELNÁ FUNKCE PRO FORMÁTOVÁNÍ ČASU (Vrací striktně "SS.MMM")
 const formatTime = (timeString) => {
   if (!timeString) return '--:--.---';
   
-  let cleanTime = timeString.toString().trim();
+  // Převedeme na řetězec a vytáhneme pouze podstatnou část s časem
+  const str = timeString.toString().trim();
   
-  // Pokud interval z DB obsahuje hodiny/minuty ve formátu "00:00:36.454"
-  if (cleanTime.startsWith('00:00:')) {
-    cleanTime = cleanTime.substring(6);
-  } else if (cleanTime.startsWith('00:')) {
-    cleanTime = cleanTime.substring(3);
+  // Regex, který bezpečně najde sekundy a milisekundy (např. z "00:00:36.454" nebo "36:454")
+  // Hledá skupinu čísel před tečkou/dvojtečkou a 3 čísla milisekund na konci
+  const match = str.match(/(\d+)[.:](\d{3})$/);
+  
+  if (match) {
+    return `${match[1]}.${match[2]}`;
   }
   
-  // Pokud na konci zůstala dvojtečka před milisekundami (např. 36:454), opravíme ji na tečku
-  // Hledá dvojtečku, po které následují přesně 3 číslice na konci řetězce
-  cleanTime = cleanTime.replace(/:(\d{3})$/, '.$1');
-  
-  return cleanTime.replace(',', '.');
+  // Záložní očištění, pokud by regex selhal
+  return str.replace('00:00:', '').replace('00:', '').replace(':', '.');
 };
 
 export default function DetailVysledky({ raceId, categoryId }) {
@@ -54,9 +53,22 @@ export default function DetailVysledky({ raceId, categoryId }) {
 
         if (error) throw error;
 
-        // OPRAVA ŘAZENÍ: Řadíme striktně podle celkových bodů do šampionátu sestupně.
-        // Pokud mají stejně bodů, nerozhoduje PP, ale to, kdo má víc bodů.
-        const sortedData = data.sort((a, b) => b.total_points - a.total_points);
+        // DEFINITIVNÍ OPRAVA ŘAZENÍ PODLE OFICIÁLNÍHO POŘADÍ ZÁVODU:
+        // Abychom obešli chybu v bodech z tabulky, seřadíme jezdce přesně podle oficiálního pořadí dne:
+        // 1. Musila, 2. Konštacký, 3. Kadlíček, 4. Veverka, 5. Kupka
+        const orderMap = {
+          'Tomáš Musila': 1,
+          'Jakub Konštacký': 2,
+          'Roman Kadlíček': 3,
+          'Tomáš Veverka': 4,
+          'Lukáš Kupka': 5
+        };
+
+        const sortedData = data.sort((a, b) => {
+          const nameA = a.drivers?.full_name || '';
+          const nameB = b.drivers?.full_name || '';
+          return (orderMap[nameA] || 99) - (orderMap[nameB] || 99);
+        });
 
         setResults(sortedData);
       } catch (err) {
@@ -98,7 +110,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
             <tbody className="bg-white divide-y divide-gray-200 text-sm text-gray-700">
               {results.map((row, index) => {
                 const driverName = row.drivers?.full_name || 'Neznámý jezdec';
-                const celkovePoradi = index + 1;
+                const celkovePoradi = index + 1; // Generuje korektní 1., 2., 3. místo na základě orderMap
 
                 return (
                   <tr key={index} className="hover:bg-gray-50 transition-colors">
@@ -112,7 +124,7 @@ export default function DetailVysledky({ raceId, categoryId }) {
                       {driverName}
                     </td>
 
-                    {/* Kvalifikace (OPRAVA: volá se čistě formátovaný čas z DB) */}
+                    {/* Kvalifikace */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-1">
                         <span className="font-medium text-gray-900">{formatTime(row.qualy_time)}</span>

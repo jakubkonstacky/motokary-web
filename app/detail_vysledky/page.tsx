@@ -175,26 +175,23 @@ export default async function DetailVysledkyPage(props: {
                           
                           {/* KVALIFIKACE TÝMŮ */}
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                            <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>                               
-                              {team.pos_qualy ? `${team.pos_qualy}. poz` : '-'} {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>} /
-                            {/*
-                            </div>
-                            <div style={{ fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                            */}
-                              {formatInterval(team.qualy_time)}
-                            </div>                             
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {team.pos_qualy ? `${team.pos_qualy}. poz` : '-'} / 
+                             <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                                  {formatInterval(team.qualy_time)} 
+                              </span>                            
+                               {team.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
+                            </div>     
                           </td>
 
                           {/* HLAVNÍ ZÁVOD TÝMŮ */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
-                              {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'} /
-                            {/*  
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'} / 
+                              <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                                  {formatInterval(row.team)} 
+                              </span>                            
                             </div>                            
-                            <div style={{ fontFamily: 'monospace', color: '#aaa', fontSize: '0.8rem' }}>
-                              */}
-                              {formatInterval(team.race_1_time)}
-                            </div>                           
                           </td>
 
                           {/* BODY TÝMŮ (OPRAVENO) */}

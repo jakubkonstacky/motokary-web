@@ -265,7 +265,7 @@ export default async function DetailVysledkyPage(props: {
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                             {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} 
-                           <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                
+                           <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: {row.pole_position ? '#fbbf24' : '#aaa' } , background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                
                                 {row.qualy_time ? `/ ${formatInterval(row.qualy_time)}` : '' }
                             </span>                            
                              {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}

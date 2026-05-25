@@ -11,7 +11,8 @@ const supabase = createClient(
 
 // Vylepšená čistící funkce pro zobrazení časů ve formátu "SS.MMM" nebo "MM:SS.MMM"
 const formatInterval = (interval: string | null) => {
-  if (!interval) return '--:--.---';
+  // if (!interval) return '--:--.---';
+  if (!interval) return 'XXX';
   let str = interval.toString().trim();
   
   // Odstranění zbytečných úvodních nul z Postgres intervalu

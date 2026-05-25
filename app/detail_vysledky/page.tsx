@@ -174,36 +174,38 @@ export default async function DetailVysledkyPage(props: {
                           </td>
                          {/* KVALIFIKACE */}
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                              <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {formatInterval(team.qualy_time)}
-                             </div>
-                             <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                            <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
                                {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
-                              ({team.pos_qualy ? `${team.pos_qualy}. poz` : '-'})
+                              {team.pos_qualy ? `${team.pos_qualy}. poz` : '-'}
                             </div>
+                            <div style={{ fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
+                            {formatInterval(team.qualy_time)}
+                             </div>                             
                           </td>
 
                          {/* 1. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {formatInterval(team.race_1_time)}
-                            </div>
-                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                              ({team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'})
+                            <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
+                              {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'}
                             </div>                            
+                            <div style={{ fontFamily: 'monospace', color: '#aaa', fontSize: '0.8rem' }}>
+                              {formatInterval(team.race_1_time)}
+                            </div>                           
                           </td>
 
                           {/* BODY DO ŠAMPIONÁTU */}
                           <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                             <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
+                             {extraBod > 0 && ( +{extraBod}b)
+                             }
                              {/* 
-                             {extraBod > 0 && (
                                 <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
                                   +{extraBod}b
                                 </span>
+                                )}
                                 */}
-                              )}
+                              
                             </div>
                           </td>                          
                         </tr>
@@ -267,33 +269,33 @@ export default async function DetailVysledkyPage(props: {
                           
                           {/* KVALIFIKACE */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {formatInterval(row.qualy_time)}
-                            </div>
-                            <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                              ({row.pos_qualy ? `${row.pos_qualy}. poz` : '-'})
+                            <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
+                              {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} - {formatInterval(row.qualy_time)}
                               {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                             </div>
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
+                              {formatInterval(row.qualy_time)}
+                            </div>                            
                           </td>
 
                           {/* 1. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                           <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
+                              {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} - {formatInterval(row.race_1_time)}
+                            </div>                            
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
                               {formatInterval(row.race_1_time)}
-                            </div>
-                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                              ({row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'})
                             </div>                            
                           </td>
 
                           {/* 2. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                           <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
+                              {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'}
+                            </div>
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
                               {formatInterval(row.race_2_time)}
-                            </div>
-                           <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
-                              ({row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'})
-                            </div>
+                            </div>                            
                           </td>
 
                           {/* BODY DO ŠAMPIONÁTU */}

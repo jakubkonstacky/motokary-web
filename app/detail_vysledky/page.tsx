@@ -158,7 +158,7 @@ export default async function DetailVysledkyPage(props: {
                       const extraBod = parseInt(team.extra_point, 10) || 0;
                       return (
                         <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#974' }}>{idx + 1}.</td>
+                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 1 ? '#fbbf24' : idx < 2 ? '#aaa' :  idx < 3 ? '#974' : '#974' }}>{idx + 1}.</td>
                           <td style={{ ...THEME.td, textAlign: 'left' }}>
                             <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '0.95rem', marginBottom: '4px' }}>
                               {team.team_name}

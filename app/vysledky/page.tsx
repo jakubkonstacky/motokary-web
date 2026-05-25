@@ -65,7 +65,7 @@ export default async function VysledkyPage({ searchParams }: { searchParams: { y
                 <tbody>
                   {sortedDrivers.map((d: any, idx) => (
                     <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={THEME.td}>{idx + 1}.</td>
+                      <td style={{ ...THEME.td, fontWeight: '800', color: idx < 1 ? '#fbbf24' : idx < 2 ? '#aaa' :  idx < 3 ? '#974' : '#ffffff' }}>{idx + 1}.</td>
                       <td style={{ ...THEME.td, fontWeight: '700' }}>{d.name}</td>
                       {races?.map(r => {
                         const info = d.raceData[r.id];

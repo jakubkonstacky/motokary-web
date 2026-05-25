@@ -187,9 +187,9 @@ export default async function DetailVysledkyPage(props: {
                           {/* HLAVNÍ ZÁVOD TÝMŮ */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
                             <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'} / 
-                              <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
-                                  {formatInterval(team.race_1_time)} 
+                              {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'} 
+                              <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                                        
+                                {team.race_1_time ? `/ ${formatInterval(team.race_1_time)}` : '' }
                               </span>                            
                             </div>                            
                           </td>
@@ -264,9 +264,9 @@ export default async function DetailVysledkyPage(props: {
                         {/* KVALIFIKACE INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / 
-                           <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
-                                {formatInterval(row.qualy_time)} 
+                            {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} 
+                           <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                
+                                {row.qualy_time ? `/ ${formatInterval(row.qualy_time)}` : '' }
                             </span>                            
                              {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                           </div>                            
@@ -275,8 +275,8 @@ export default async function DetailVysledkyPage(props: {
                         {/* 1. JÍZDA INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} / {row.race_1_time}
-                            <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                
+                            {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} 
+                            <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                                                
                                 {row.race_1_time ? `/ ${formatInterval(row.race_1_time)}` : '' }
                             </span>                            
                           </div>                            
@@ -285,7 +285,7 @@ export default async function DetailVysledkyPage(props: {
                         {/* 2. JÍZDA INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / 
+                            {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'}  
                                <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>                                
                                  {row.race_2_time ? `/ ${formatInterval(row.race_2_time)}` : '' }
                               </span>

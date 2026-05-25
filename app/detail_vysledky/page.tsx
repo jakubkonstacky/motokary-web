@@ -75,7 +75,7 @@ export default async function DetailVysledkyPage(props: {
       </div>
 
       {/* NÁZEV A DATUM */}
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <div style={{ texttextAlgin: 'center', marginBottom: '40px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
             {race.name}
@@ -130,9 +130,8 @@ export default async function DetailVysledkyPage(props: {
               const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
               const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
               if (scoreB !== scoreA) {
-                  return scoreB - scoreA; // Sestupně podle bodů
+                  return scoreB - scoreA;
                 }
-                // Při shodě bodů rozhoduje lepší pozice v kvalifikaci (vzestupně, 1 je nejlepší)
                 return (parseInt(a.pos_qualy, 10) || 99) - (parseInt(b.pos_qualy, 10) || 99);
               }
           );
@@ -147,15 +146,16 @@ export default async function DetailVysledkyPage(props: {
                   <thead>
                     <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
                       <th style={{ ...THEME.th, width: '50px' }}>#</th>
-                      <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmu (Kategorie)</th>
+                      <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmů (Kategorie)</th>
                       <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
                       <th style={THEME.th}>Závod (Poz. / Čas)</th>
-                      <th style={{ ...THEME.th, textAlign: 'center', color: '#fbbf24' }}>Body</th>
+                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedTeams.map((team: any, idx: number) => {
                       const cisteBody = parseInt(team.total_points, 10) || 0;
+                      const extraBod = parseInt(team.extra_point, 10) || 0;
                       return (
                         <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                           <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
@@ -172,17 +172,18 @@ export default async function DetailVysledkyPage(props: {
                               ))}
                             </div>
                           </td>
-                         {/* KVALIFIKACE */}
+                          
+                          {/* KVALIFIKACE TÝMŮ */}
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
                             <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>                               
                               {team.pos_qualy ? `${team.pos_qualy}. poz` : '-'} {team.pole_position && <span style={{ marginLeft: '6px' }} title="Pole Position">🥇</span>}
                             </div>
                             <div style={{ fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
-                            {formatInterval(team.qualy_time)}
-                             </div>                             
+                              {formatInterval(team.qualy_time)}
+                            </div>                             
                           </td>
 
-                         {/* 1. JÍZDA - DOPLNĚN ČAS */}
+                          {/* HLAVNÍ ZÁVOD TÝMŮ */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
                             <div style={{ color: '#fff', fontSize: '0.95rem', marginTop: '2px' }}>
                               {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'}
@@ -192,9 +193,9 @@ export default async function DetailVysledkyPage(props: {
                             </div>                           
                           </td>
 
-                          {/* BODY DO ŠAMPIONÁTU */}
-                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>                          
-                            <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                          {/* BODY TÝMŮ (OPRAVENO) */}
+                          <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
                               {extraBod > 0 && (
                                 <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
@@ -214,95 +215,92 @@ export default async function DetailVysledkyPage(props: {
         })()
       ) : (
         // ===================================================================
-        // STANDARDNÍ ROZPAD PODLE KATEGORIÍ (VČETNĚ ČASŮ JÍZD 1 A 2)
+        // STANDARDNÍ ROZPAD PODLE KATEGORIÍ
         // ===================================================================
       categories?.map((cat) => {
         const catResults = results?.filter(r => r.category_id === cat.id) || [];
         if (catResults.length === 0) return null;
       
-       // DYNAMICKÉ ŘAZENÍ JEZDCŮ: Body sestupně -> Kvalifikace vzestupně (při shodě)
-          const sortedResults = [...catResults].sort((a: any, b: any) => {
-            const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
-            const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
-            
-            if (scoreB !== scoreA) {
-              return scoreB - scoreA; // Sestupně podle bodů
-            }
-            // Shoda bodů: Rozhoduje lepší (nižší číslo) pozice v kvalifikaci
-            return (parseInt(a.pos_qualy, 10) || 99) - (parseInt(b.pos_qualy, 10) || 99);
-          });
+        const sortedResults = [...catResults].sort((a: any, b: any) => {
+          const scoreA = (parseInt(a.total_points, 10) || 0) + (parseInt(a.extra_point, 10) || 0);
+          const scoreB = (parseInt(b.total_points, 10) || 0) + (parseInt(b.extra_point, 10) || 0);
+          
+          if (scoreB !== scoreA) {
+            return scoreB - scoreA;
+          }
+          return (parseInt(a.pos_qualy, 10) || 99) - (parseInt(b.pos_qualy, 10) || 99);
+        });
 
+        return (
+          <div key={cat.id} style={{ marginBottom: '50px' }}>
+            <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
+              🏆 {cat.name}
+            </h2>
+            <div style={THEME.tableContainer}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
+                    <th style={{ ...THEME.th, width: '50px' }}>#</th>
+                    <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
+                    <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
+                    <th style={THEME.th}>1. jízda (Poz. / Čas)</th>
+                    <th style={THEME.th}>2. jízda (Poz. / Čas)</th>
+                    <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedResults.map((row, idx) => {
+                    const cisteBody = parseInt(row.total_points, 10) || 0;
+                    const extraBod = parseInt(row.extra_point, 10) || 0;
 
-          return (
-            <div key={cat.id} style={{ marginBottom: '50px' }}>
-              <h2 style={{ ...THEME.categoryTitle, borderLeft: '3px solid #fbbf24', paddingLeft: '12px', fontSize: '1.3rem', marginBottom: '15px' }}>
-                🏆 {cat.name}
-              </h2>
-              <div style={THEME.tableContainer}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
-                      <th style={{ ...THEME.th, width: '50px' }}>#</th>
-                      <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
-                      <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
-                      <th style={THEME.th}>1. jízda (Poz. / Čas)</th>
-                      <th style={THEME.th}>2. jízda (Poz. / Čas)</th>
-                      <th style={{ ...THEME.th, textAlign: 'center', color: '#fbbf24' }}>Body</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedResults.map((row, idx) => {
-                      const cisteBody = parseInt(row.total_points, 10) || 0;
-                      const extraBod = parseInt(row.extra_point, 10) || 0;
+                    return (
+                      <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                        <td style={{ ...THEME.td, textAlign: 'left' }}>
+                          <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
+                        </td>
+                        
+                        {/* KVALIFIKACE INDIVIDUÁLNÍ */}
+                        <td style={{ ...THEME.td, textAlign: 'center' }}>                            
+                          <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                            {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / {formatInterval(row.qualy_time)} {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
+                          </div>                            
+                        </td>
 
-                      return (
-                        <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
-                          <td style={{ ...THEME.td, textAlign: 'left' }}>
-                            <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
-                          </td>
-                          
-                          {/* KVALIFIKACE */}
-                          <td style={{ ...THEME.td, textAlign: 'center' }}>                            
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / {formatInterval(row.qualy_time)} {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
-                            </div>                            
-                          </td>
+                        {/* 1. JÍZDA INDIVIDUÁLNÍ */}
+                        <td style={{ ...THEME.td, textAlign: 'center' }}>
+                          <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                            {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} / {formatInterval(row.race_1_time)} 
+                          </div>                            
+                        </td>
 
-                          {/* 1. JÍZDA - DOPLNĚN ČAS */}
-                          <td style={{ ...THEME.td, textAlign: 'center' }}>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} / {formatInterval(row.race_1_time)} 
-                            </div>                            
-                          </td>
+                        {/* 2. JÍZDA INDIVIDUÁLNÍ */}
+                        <td style={{ ...THEME.td, textAlign: 'center' }}>                            
+                          <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                            {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / {formatInterval(row.race_2_time)} 
+                          </div>                            
+                        </td>
 
-                          {/* 2. JÍZDA - DOPLNĚN ČAS */}
-                          <td style={{ ...THEME.td, textAlign: 'center' }}>                           
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                              {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / {formatInterval(row.race_2_time)} 
-                            </div>                            
-                          </td>
-
-                          {/* BODY DO ŠAMPIONÁTU */}
-                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
-                            <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                              <span>{cisteBody}</span>
-                              {extraBod > 0 && (
-                                <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
-                                  +{extraBod}b
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                        {/* BODY INDIVIDUÁLNÍ (OPRAVENO ZAROVNÁNÍ) */}
+                        <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
+                            <span>{cisteBody}</span>
+                            {extraBod > 0 && (
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
+                                +{extraBod}b
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          );
-        })
+          </div>
+        );
+      })
       )}
 
       {/* NAVIGAČNÍ ODKAZY DOLE */}

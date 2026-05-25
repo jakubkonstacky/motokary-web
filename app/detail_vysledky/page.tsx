@@ -158,16 +158,16 @@ export default async function DetailVysledkyPage(props: {
                       const extraBod = parseInt(team.extra_point, 10) || 0;
                       return (
                         <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                          <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#974' }}>{idx + 1}.</td>
                           <td style={{ ...THEME.td, textAlign: 'left' }}>
-                            <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '1.05rem', marginBottom: '4px' }}>
+                            <div style={{ fontWeight: '800', color: '#fbbf24', fontSize: '0.95rem', marginBottom: '4px' }}>
                               {team.team_name}
                             </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.85rem' }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.75rem' }}>
                               {team.driversList.map((d: any, i: number) => (
                                 <span key={i} style={{ background: 'rgba(255,255,255,0.04)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                   <strong style={{ color: '#fff' }}>{d.name}</strong> 
-                                  {d.cat && <span style={{ color: '#888', marginLeft: '4px', fontSize: '0.75rem' }}>({d.cat})</span>}
+                                  {d.cat && <span style={{ color: '#888', marginLeft: '3px', fontSize: '0.65rem' }}>({d.cat})</span>}
                                 </span>
                               ))}
                             </div>
@@ -255,7 +255,7 @@ export default async function DetailVysledkyPage(props: {
 
                     return (
                       <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#444' }}>{idx + 1}.</td>
+                        <td style={{ ...THEME.td, fontWeight: '800', color: idx < 3 ? '#fbbf24' : '#974' }}>{idx + 1}.</td>
                         <td style={{ ...THEME.td, textAlign: 'left' }}>
                           <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{row.drivers?.full_name}</span>
                         </td>

@@ -263,14 +263,21 @@ export default async function DetailVysledkyPage(props: {
                         {/* KVALIFIKACE INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / {formatInterval(row.qualy_time)} {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
+                            {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / 
+                           <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                                {formatInterval(row.qualy_time)} 
+                            </span>                            
+                             {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                           </div>                            
                         </td>
 
                         {/* 1. JÍZDA INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} / {formatInterval(row.race_1_time)} 
+                            {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} / 
+                            <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                                {formatInterval(row.race_1_time)} 
+                            </span>                            
                           </div>                            
                         </td>
 
@@ -278,7 +285,7 @@ export default async function DetailVysledkyPage(props: {
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                             {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / 
-                               <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                               <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
                                 {formatInterval(row.race_2_time)} 
                               </span>
                           </div>                            

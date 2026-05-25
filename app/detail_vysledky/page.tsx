@@ -150,7 +150,7 @@ export default async function DetailVysledkyPage(props: {
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmu (Kategorie)</th>
                       <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
                       <th style={THEME.th}>Závod (Poz. / Čas)</th>
-                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                      <th style={{ ...THEME.th, textAlign: 'center', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -193,18 +193,7 @@ export default async function DetailVysledkyPage(props: {
                           </td>
 
                           {/* BODY DO ŠAMPIONÁTU */}
-                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
-                            {/* 
-                            <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                              <span>{cisteBody}</span>
-                             {extraBod > 0 && ( +{extraBod}b)}
-                                <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
-                                  +{extraBod}b
-                                </span>
-                                )}
-                                */}
-                            </div>
-
+                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>                          
                             <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
                               {extraBod > 0 && (
@@ -213,8 +202,6 @@ export default async function DetailVysledkyPage(props: {
                                 </span>
                               )}
                             </div>
-
-                            
                           </td>                          
                         </tr>
                       );
@@ -260,7 +247,7 @@ export default async function DetailVysledkyPage(props: {
                       <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
                       <th style={THEME.th}>1. jízda (Poz. / Čas)</th>
                       <th style={THEME.th}>2. jízda (Poz. / Čas)</th>
-                      <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
+                      <th style={{ ...THEME.th, textAlign: 'center', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>
                   <tbody>

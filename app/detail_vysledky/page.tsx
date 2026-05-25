@@ -189,7 +189,7 @@ export default async function DetailVysledkyPage(props: {
                             <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                               {team.pos_race_1 ? `${team.pos_race_1}. poz` : '-'} / 
                               <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
-                                  {formatInterval(row.team)} 
+                                  {formatInterval(team.race_1_time)} 
                               </span>                            
                             </div>                            
                           </td>
@@ -288,7 +288,7 @@ export default async function DetailVysledkyPage(props: {
                             {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / 
                                <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
                                 {formatInterval(row.race_2_time)} 
-                                 {team.race_2_time ? `${formatInterval(row.race_2_time)}` : '-' }
+                                 {row.race_2_time ? `${formatInterval(row.race_2_time)}` : '-' }
                               </span>
                           </div>                            
                         </td>

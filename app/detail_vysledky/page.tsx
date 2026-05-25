@@ -277,7 +277,10 @@ export default async function DetailVysledkyPage(props: {
                         {/* 2. JÍZDA INDIVIDUÁLNÍ */}
                         <td style={{ ...THEME.td, textAlign: 'center' }}>                            
                           <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
-                            {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / {formatInterval(row.race_2_time)} 
+                            {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} / 
+                               <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                                {formatInterval(row.race_2_time)} 
+                              </span>
                           </div>                            
                         </td>
 

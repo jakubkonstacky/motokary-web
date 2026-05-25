@@ -194,7 +194,7 @@ export default async function DetailVysledkyPage(props: {
                           </td>
 
                           {/* BODY DO ŠAMPIONÁTU */}
-                          <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                             <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
                              {extraBod > 0 && ( +{extraBod}b)
@@ -299,7 +299,7 @@ export default async function DetailVysledkyPage(props: {
                           </td>
 
                           {/* BODY DO ŠAMPIONÁTU */}
-                          <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          <td style={{ ...THEME.td, textAlign: 'center', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                             <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
                               {extraBod > 0 && (

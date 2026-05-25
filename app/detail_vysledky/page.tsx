@@ -269,12 +269,14 @@ export default async function DetailVysledkyPage(props: {
                           
                           {/* KVALIFIKACE */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
+                            {/*
                             <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
                               {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} - {formatInterval(row.qualy_time)}
                               {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                             </div>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
-                              {formatInterval(row.qualy_time)}
+                            */}
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {row.pos_qualy ? `${row.pos_qualy}. poz` : '-'} / {formatInterval(row.qualy_time)} {row.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}
                             </div>                            
                           </td>
 
@@ -283,8 +285,8 @@ export default async function DetailVysledkyPage(props: {
                            <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
                               {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'} - {formatInterval(row.race_1_time)}
                             </div>                            
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
-                              {formatInterval(row.race_1_time)}
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {formatInterval(row.race_1_time)} / {row.pos_race_1 ? `${row.pos_race_1}. poz` : '-'}
                             </div>                            
                           </td>
 
@@ -293,8 +295,8 @@ export default async function DetailVysledkyPage(props: {
                            <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
                               {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} - {formatInterval(row.race_2_time)}
                             </div>
-                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
-                              {formatInterval(row.race_2_time)}
+                            <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
+                              {formatInterval(row.race_2_time)} / {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'}
                             </div>                            
                           </td>
 

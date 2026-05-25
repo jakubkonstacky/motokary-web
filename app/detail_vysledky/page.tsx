@@ -291,7 +291,7 @@ export default async function DetailVysledkyPage(props: {
                           {/* 2. JÍZDA - DOPLNĚN ČAS */}
                           <td style={{ ...THEME.td, textAlign: 'center' }}>
                            <div style={{ color: '#666', fontSize: '0.95rem', marginTop: '2px' }}>
-                              {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'}
+                              {row.pos_race_2 ? `${row.pos_race_2}. poz` : '-'} - {formatInterval(row.race_2_time)}
                             </div>
                             <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.8rem' }}>
                               {formatInterval(row.race_2_time)}

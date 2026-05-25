@@ -197,10 +197,12 @@ export default async function DetailVysledkyPage(props: {
                           <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
                             <div style={{ display: 'flex', itemsCenter: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
-                              {extraBod > 0 && (
+                             {/* 
+                             {extraBod > 0 && (
                                 <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
                                   +{extraBod}b
                                 </span>
+                                */}
                               )}
                             </div>
                           </td>                          

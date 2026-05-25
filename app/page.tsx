@@ -125,7 +125,8 @@ export default async function HomePage(props: {
                       <tbody>
                         {top3.map(([name, total]: any, idx) => (
                           <tr key={name} style={{ borderBottom: idx === 2 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                            <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : idx === 1 ? '#aaa' : '#888',, fontSize: '0.9rem' }}>{idx + 1}.</td>
+                            {/* <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : idx === 1 ? '#aaa' : '#888',, fontSize: '0.9rem' }}>{idx + 1}.</td> */}
+                            <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : idx === 1 ? '#aaa' : '#888', fontSize: '0.9rem' }}>{idx + 1}.</td> 
                             <td style={{ ...THEME.td, padding: '10px 15px', fontWeight: '700', fontSize: '0.9rem' }}>{name}</td>
                             <td style={{ ...THEME.td, padding: '10px 15px', textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '0.9rem' }}>{total}</td>
                           </tr>

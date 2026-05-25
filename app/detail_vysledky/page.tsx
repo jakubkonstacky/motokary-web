@@ -75,7 +75,7 @@ export default async function DetailVysledkyPage(props: {
       </div>
 
       {/* NÁZEV A DATUM */}
-      <div style={{ textAlgin: 'center', marginBottom: '40px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
             {race.name}
@@ -177,7 +177,7 @@ export default async function DetailVysledkyPage(props: {
                           <td style={{ ...THEME.td, textAlign: 'center', fontFamily: 'monospace', color: '#aaa', fontSize: '0.9rem' }}>
                             <div style={{ fontFamily: 'monospace', color: '#fff', fontSize: '0.9rem' }}>
                               {team.pos_qualy ? `${team.pos_qualy}. poz` : '-'} / 
-                             <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: row.pole_position ? '#fbbf24' : '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
+                             <span style={{ fontSize: '0.85rem', fontWeight: 'normal', color: team.pole_position ? '#fbbf24' : '#aaa', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
                                   {formatInterval(team.qualy_time)} 
                               </span>                            
                                {team.pole_position && <span style={{ marginLeft: '4px' }} title="Pole Position">🥇 PP</span>}

@@ -147,8 +147,8 @@ export default async function DetailVysledkyPage(props: {
                     <tr style={{ borderBottom: '2px solid #333', background: 'rgba(255,255,255,0.02)' }}>
                       <th style={{ ...THEME.th, width: '50px' }}>#</th>
                       <th style={{ ...THEME.th, textAlign: 'left' }}>Sestava týmů (Kategorie)</th>
-                      <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
-                      <th style={THEME.th}>Závod (Poz. / Čas)</th>
+                      <th style={THEME.th}>Kvalifikace (Poz. / Nej. čas)</th>
+                      <th style={THEME.th}>Závod (Poz. / Nej. čas)</th>
                       <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
                     </tr>
                   </thead>
@@ -244,8 +244,8 @@ export default async function DetailVysledkyPage(props: {
                     <th style={{ ...THEME.th, width: '50px' }}>#</th>
                     <th style={{ ...THEME.th, textAlign: 'left' }}>Jezdec</th>
                     <th style={THEME.th}>Kvalifikace (Poz. / Čas)</th>
-                    <th style={THEME.th}>1. jízda (Poz. / Čas)</th>
-                    <th style={THEME.th}>2. jízda (Poz. / Čas)</th>
+                    <th style={THEME.th}>1. jízda (Poz. / Nej. čas)</th>
+                    <th style={THEME.th}>2. jízda (Poz. / Nej. čas)</th>
                     <th style={{ ...THEME.th, textAlign: 'right', color: '#fbbf24' }}>Body</th>
                   </tr>
                 </thead>

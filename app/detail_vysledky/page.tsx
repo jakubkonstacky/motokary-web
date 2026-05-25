@@ -194,11 +194,11 @@ export default async function DetailVysledkyPage(props: {
                           </td>
 
                           {/* BODY TÝMŮ (OPRAVENO) */}
-                          <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '1.1rem' }}>
+                          <td style={{ ...THEME.td, textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '0.9rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                               <span>{cisteBody}</span>
                               {extraBod > 0 && (
-                                <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
                                   +{extraBod}b
                                 </span>
                               )}
@@ -286,7 +286,7 @@ export default async function DetailVysledkyPage(props: {
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
                             <span>{cisteBody}</span>
                             {extraBod > 0 && (
-                              <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 5px', borderRadius: '3px' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '1px 3px', borderRadius: '3px' }}>
                                 +{extraBod}b
                               </span>
                             )}

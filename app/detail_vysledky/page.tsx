@@ -75,7 +75,7 @@ export default async function DetailVysledkyPage(props: {
       </div>
 
       {/* NÁZEV A DATUM */}
-      <div style={{ texttextAlgin: 'center', marginBottom: '40px' }}>
+      <div style={{ textAlgin: 'center', marginBottom: '40px' }}>
         <div style={titleRowStyle}>
           <h1 style={{ ...THEME.mainTitle, fontSize: '1.7rem', margin: 0, letterSpacing: '0.5px' }}>
             {race.name}

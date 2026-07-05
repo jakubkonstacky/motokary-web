@@ -13,7 +13,7 @@ const supabase = createClient(
 export default async function HomePage(props: { 
   searchParams: Promise<{ year?: string }> 
 }) {
-  // 1. POVINNÉ: Awaitnutí parametrů z URL
+  // 1. Awaitnutí parametrů z URL
   const searchParams = await props.searchParams;
   const yearFromUrl = searchParams.year;
 
@@ -35,7 +35,7 @@ export default async function HomePage(props: {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 3. Načtení dat pro vybraný rok
+    // 3. Načtení dat pro vybraný rok paralelně
     const [racesRes, catsRes, resultsRes] = await Promise.all([
       supabase.from('races').select('*').eq('season_id', currentYear).order('race_date', { ascending: true }),
       supabase.from('categories').select('*').eq('season_id', currentYear).order('order_by', { ascending: true }),
@@ -52,7 +52,7 @@ export default async function HomePage(props: {
       <div style={THEME.container}>
         <div style={twoColumnGridStyle}>
           
-          {/* LEVÝ SLOUPY: Kalendář závodů */}
+          {/* LEVÝ SLOUPCOVÝ BLOK: Kalendář závodů */}
           <section>
             <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>
               Kalendář závodů {currentYear}
@@ -62,7 +62,16 @@ export default async function HomePage(props: {
                 <tbody>
                   {races.map((race, idx) => {
                     const rDate = new Date(race.race_date);
+                    rDate.setHours(0, 0, 0, 0);
+                    
                     const isPast = rDate < today;
+                    
+                    // NOVÁ LOGIKA: Zkontrolujeme, zda pro tento konkrétní závod už máme v DB jakákoliv data výsledků
+                    const hasResults = resultsData.some(r => r.race_id === race.id);
+                    
+                    // Podmínka zobrazení odkazu: Je v minulosti NEBO už pro něj existují výsledky v DB
+                    const showLink = isPast || hasResults;
+
                     const dayName = czechDays[rDate.getDay()];
                     const dateStr = rDate.toLocaleDateString('cs-CZ', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     const timeStr = race.time ? race.time.substring(0, 5) : '08:30';
@@ -83,7 +92,7 @@ export default async function HomePage(props: {
                               <span style={{ color: '#fff' }}>{race.name}</span>                            
                             </div>
                             <div style={{ fontSize: '0.9rem' }}>
-                              {isPast ? (
+                              {showLink ? (
                                 <Link href={`/detail_vysledky?id=${race.id}`} style={{ color: '#fbbf24', textDecoration: 'none', fontWeight: '600' }}>
                                   → Výsledky
                                 </Link>
@@ -104,7 +113,7 @@ export default async function HomePage(props: {
             </div>
           </section>
 
-          {/* PRAVÝ SLOUPY: Pořadí TOP 3 */}
+          {/* PRAVÝ SLOUPCOVÝ BLOK: Pořadí TOP 3 */}
           <section>
             <h2 style={{ ...THEME.mainTitle, textAlign: 'left', fontSize: '2rem' }}>Průběžné pořadí</h2>
             {categories.map((cat) => {
@@ -125,7 +134,6 @@ export default async function HomePage(props: {
                       <tbody>
                         {top3.map(([name, total]: any, idx) => (
                           <tr key={name} style={{ borderBottom: idx === 2 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
-                            {/* <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : idx === 1 ? '#aaa' : '#888',, fontSize: '0.9rem' }}>{idx + 1}.</td> */}
                             <td style={{ ...THEME.td, padding: '10px 15px', width: '30px', fontWeight: '800', color: idx === 0 ? '#fbbf24' : idx === 1 ? '#aaa' : '#974', fontSize: '0.9rem' }}>{idx + 1}.</td> 
                             <td style={{ ...THEME.td, padding: '10px 15px', fontWeight: '700', fontSize: '0.9rem' }}>{name}</td>
                             <td style={{ ...THEME.td, padding: '10px 15px', textAlign: 'right', fontWeight: '900', color: '#fbbf24', fontSize: '0.9rem' }}>{total}</td>
@@ -142,7 +150,6 @@ export default async function HomePage(props: {
       </div>
     );
   } catch (error) {
-    // Zachycení chyby pro debugování na serveru
     console.error("Kritická chyba na úvodní stránce:", error);
     return <div style={{ color: '#fff', padding: '100px', textAlign: 'center' }}>Omlouváme se, něco se pokazilo při načítání dat.</div>;
   }
